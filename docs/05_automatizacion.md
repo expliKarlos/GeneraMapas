@@ -91,6 +91,39 @@ Orden recomendado:
 4. Generar `Placemark` con `ExtendedData`.
 5. Validar XML.
 
+## KML para My Maps
+
+La variante de My Maps debe seguir una plantilla conservadora:
+
+```xml
+<Style id="style-categoria">
+  <IconStyle>
+    <color>ff4370ff</color>
+    <scale>1.1</scale>
+    <Icon><href>https://maps.google.com/mapfiles/kml/paddle/orange-circle.png</href></Icon>
+  </IconStyle>
+</Style>
+
+<Placemark id="restaurante_ejemplo">
+  <name>Nombre visible</name>
+  <styleUrl>#style-categoria</styleUrl>
+  <ExtendedData>
+    <Data name="id_lugar"><value>restaurante_ejemplo</value></Data>
+    <Data name="categoria"><value>Gastronomia</value></Data>
+  </ExtendedData>
+  <description>Texto plano breve</description>
+  <Point><coordinates>lon,lat,0</coordinates></Point>
+</Placemark>
+```
+
+Reglas:
+
+- no usar `Folder`,
+- no usar `hotSpot`,
+- no meter metadatos principales en `description`,
+- no incluir filas `por_confirmar`,
+- definir los estilos antes de los `Placemark`.
+
 ## Mejoras futuras
 
 - Script para dividir CSV por capa.

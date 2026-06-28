@@ -17,6 +17,7 @@ No necesitas instalar programas si usas la version publicada en GitHub Pages.
 - CSV maestro: archivo principal con todos los lugares.
 - CSV por capas: un archivo separado por cada capa.
 - KML backup: copia opcional para Google Earth o respaldo.
+- KML para My Maps: archivo KML con estilos por categoria y metadatos.
 - Instrucciones: guia personalizada para importar en My Maps.
 
 ## Paso 1: abrir la app
@@ -125,7 +126,8 @@ Usa los botones inferiores:
 
 - `Exportar CSV maestro`: recomendado para mantener el proyecto.
 - `Exportar CSV por capas`: util si quieres importar cada capa por separado.
-- `Exportar KML backup`: opcional, no es la via principal para My Maps.
+- `Exportar KML backup`: opcional, pensado para respaldo o Google Earth.
+- `KML para My Maps`: KML con estilos definidos en `Document`, sin carpetas y con metadatos en `ExtendedData`.
 - `Instrucciones`: genera una guia de importacion para tu mapa.
 
 ## Paso 7: importar en Google My Maps
@@ -152,7 +154,8 @@ Para actualizar un mapa existente:
 - No importes CSV y KML completos en el mismo mapa operativo.
 - Revisa manualmente los lugares ambiguos.
 - Manten una version clara del mapa, por ejemplo: `Viaje Innsbruck v1.0 2026-06-28`.
-- Usa el KML solo como backup o para Google Earth.
+- Usa el CSV como fuente principal de mantenimiento.
+- Usa el KML para My Maps solo cuando prefieras importar marcadores con estilos/metadatos desde KML.
 
 ## Problemas frecuentes
 

@@ -39,6 +39,45 @@ const DEFAULT_CATEGORY = {
   color: "#4DD0E1",
 };
 
+const KML_CATEGORY_STYLES = {
+  "Gastronomia": {
+    id: "style-gastronomia",
+    color: "ff4370ff",
+    icon: "https://maps.google.com/mapfiles/kml/paddle/orange-circle.png",
+  },
+  "Visitar y Cultura": {
+    id: "style-cultura",
+    color: "ffe1d04d",
+    icon: "https://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png",
+  },
+  "Compras y Servicios": {
+    id: "style-compras",
+    color: "ffe8731a",
+    icon: "https://maps.google.com/mapfiles/kml/paddle/blu-circle.png",
+  },
+  "Naturaleza": {
+    id: "style-naturaleza",
+    color: "ff50af4c",
+    icon: "https://maps.google.com/mapfiles/kml/paddle/grn-circle.png",
+  },
+  "Alojamiento": {
+    id: "style-alojamiento",
+    color: "ffc2577e",
+    icon: "https://maps.google.com/mapfiles/kml/paddle/purple-circle.png",
+  },
+  "Logistica y Transporte": {
+    id: "style-transporte",
+    color: "ff8b7d60",
+    icon: "https://maps.google.com/mapfiles/kml/paddle/wht-circle.png",
+  },
+};
+
+const DEFAULT_KML_STYLE = {
+  id: "style-generico",
+  color: "ff8b7d60",
+  icon: "https://maps.google.com/mapfiles/kml/paddle/wht-circle.png",
+};
+
 const state = {
   rows: [],
   stopRequested: false,
@@ -68,6 +107,7 @@ const els = {
   exportMasterButton: document.querySelector("#exportMasterButton"),
   exportLayersButton: document.querySelector("#exportLayersButton"),
   exportKmlButton: document.querySelector("#exportKmlButton"),
+  exportMyMapsKmlButton: document.querySelector("#exportMyMapsKmlButton"),
   exportGuideButton: document.querySelector("#exportGuideButton"),
 };
 
@@ -372,6 +412,81 @@ ${placemarks}
   downloadFile(`mapa_${projectSlug()}_backup.kml`, kml, "application/vnd.google-earth.kml+xml;charset=utf-8");
 }
 
+function styleForCategory(category) {
+  return KML_CATEGORY_STYLES[category] || DEFAULT_KML_STYLE;
+}
+
+function kmlStylesForRows(rows) {
+  const usedStyles = new Map();
+  rows.forEach((row) => {
+    const style = styleForCategory(row.categoria);
+    usedStyles.set(style.id, style);
+  });
+  return [...usedStyles.values()].map((style) => `    <Style id="${style.id}">
+      <IconStyle>
+        <color>${style.color}</color>
+        <scale>1.1</scale>
+        <Icon><href>${xmlEscape(style.icon)}</href></Icon>
+      </IconStyle>
+    </Style>`).join("\n");
+}
+
+function extendedDataForRow(row) {
+  const dataFields = {
+    id_lugar: row.id_lugar,
+    categoria: row.categoria,
+    subcategoria: row.subcategoria,
+    capa: row.capa,
+    estado: row.estado,
+    direccion: row.direccion,
+    google_place_id: row.google_place_id,
+    enlace_util: row.enlace_util,
+    image_url: row.image_url,
+    video_url: row.video_url,
+    nivel_confianza: row.nivel_confianza,
+    fuentes_consultadas: row.fuentes_consultadas,
+  };
+  return Object.entries(dataFields)
+    .filter(([, value]) => value != null && String(value).trim() !== "")
+    .map(([name, value]) => `        <Data name="${xmlEscape(name)}"><value>${xmlEscape(value)}</value></Data>`)
+    .join("\n");
+}
+
+function plainDescription(row) {
+  return [
+    row.descripcion_breve,
+    row.datos_interes,
+    row.nota_desambiguacion ? `Nota: ${row.nota_desambiguacion}` : "",
+  ].filter(Boolean).join(" ");
+}
+
+function exportMyMapsKml() {
+  const valid = state.rows.filter((row) => row.latitude && row.longitude && row.estado !== "por_confirmar");
+  const styles = kmlStylesForRows(valid);
+  const placemarks = valid.map((row) => {
+    const style = styleForCategory(row.categoria);
+    return `    <Placemark id="${xmlEscape(row.id_lugar)}">
+      <name>${xmlEscape(row.nombre_visible)}</name>
+      <styleUrl>#${style.id}</styleUrl>
+      <ExtendedData>
+${extendedDataForRow(row)}
+      </ExtendedData>
+      <description><![CDATA[${cdata(plainDescription(row))}]]></description>
+      <Point><coordinates>${row.longitude},${row.latitude},0</coordinates></Point>
+    </Placemark>`;
+  }).join("\n");
+
+  const kml = `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>${xmlEscape(els.projectName.value)} - KML My Maps</name>
+${styles}
+${placemarks}
+  </Document>
+</kml>`;
+  downloadFile(`mapa_${projectSlug()}_mymaps.kml`, kml, "application/vnd.google-earth.kml+xml;charset=utf-8");
+}
+
 function exportGuide() {
   const guide = `# Instrucciones de importacion - ${els.projectName.value}
 
@@ -392,6 +507,7 @@ Zona base: ${els.baseZone.value}
 
 - No importes CSV y KML completos en el mismo mapa operativo.
 - El KML exportado es backup o Google Earth.
+- El KML para My Maps usa estilos en Document, sin Folder y con metadatos en ExtendedData.
 - Revisa manualmente los lugares con estado revisar o por_confirmar.
 `;
   downloadFile(`instrucciones_${projectSlug()}.md`, guide, "text/markdown;charset=utf-8");
@@ -565,6 +681,7 @@ els.resetButton.addEventListener("click", () => {
 els.exportMasterButton.addEventListener("click", exportMaster);
 els.exportLayersButton.addEventListener("click", exportLayers);
 els.exportKmlButton.addEventListener("click", exportKml);
+els.exportMyMapsKmlButton.addEventListener("click", exportMyMapsKml);
 els.exportGuideButton.addEventListener("click", exportGuide);
 els.table.addEventListener("change", (event) => {
   const target = event.target;

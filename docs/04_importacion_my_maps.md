@@ -60,6 +60,20 @@ Precauciones:
 - Si se usa KML para importar en My Maps, generar preferiblemente un KML por capa.
 - No mezclarlo con CSV en el mismo mapa operativo.
 
+## KML adaptado para My Maps
+
+Cuando se quiera usar KML como via de importacion en My Maps, GeneraMapas puede generar una variante mas conservadora:
+
+- estilos definidos solo bajo `Document`,
+- sin `Folder`,
+- sin `hotSpot`,
+- `styleUrl` por categoria,
+- metadatos en `ExtendedData`,
+- descripcion breve en texto plano o CDATA minimo,
+- solo `Placemark` con coordenadas confirmadas.
+
+Esta variante sigue sin sustituir al CSV como fuente de mantenimiento, pero reduce el riesgo de que My Maps ignore estructuras KML complejas.
+
 ## Imagenes y videos
 
 Opciones:
