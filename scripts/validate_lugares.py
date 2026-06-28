@@ -21,6 +21,8 @@ REQUIRED_COLUMNS = [
     "capa",
     "categoria",
     "subcategoria",
+    "prioridad",
+    "tamano_icono",
     "icono_recomendado",
     "color_hex",
     "latitude",
@@ -39,6 +41,8 @@ REQUIRED_COLUMNS = [
 
 VALID_ESTADOS = {"confirmado", "revisar", "por_confirmar"}
 VALID_CONFIANZA = {"alto", "medio", "bajo"}
+VALID_PRIORIDAD = {"imprescindible", "recomendable", "opcional"}
+VALID_TAMANO_ICONO = {"grande", "normal", "pequeno"}
 ID_RE = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*$")
 
 
@@ -104,6 +108,8 @@ def validate(path: Path) -> int:
         row_id = row.get("id_lugar", "").strip()
         estado = row.get("estado", "").strip()
         confianza = row.get("nivel_confianza", "").strip()
+        prioridad = row.get("prioridad", "").strip()
+        tamano_icono = row.get("tamano_icono", "").strip()
         lat = parse_decimal(row.get("latitude", ""))
         lon = parse_decimal(row.get("longitude", ""))
 
@@ -117,6 +123,10 @@ def validate(path: Path) -> int:
             errors.append(f"{prefix}: estado invalido: {estado!r}")
         if confianza not in VALID_CONFIANZA:
             errors.append(f"{prefix}: nivel_confianza invalido: {confianza!r}")
+        if prioridad and prioridad not in VALID_PRIORIDAD:
+            errors.append(f"{prefix}: prioridad invalida: {prioridad!r}")
+        if tamano_icono and tamano_icono not in VALID_TAMANO_ICONO:
+            errors.append(f"{prefix}: tamano_icono invalido: {tamano_icono!r}")
 
         if estado == "por_confirmar" and (lat is not None or lon is not None):
             warnings.append(f"{prefix}: por_confirmar contiene coordenadas; revisa que no sean inventadas.")

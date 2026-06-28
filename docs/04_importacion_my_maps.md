@@ -70,11 +70,20 @@ Cuando se quiera usar KML como via de importacion en My Maps, GeneraMapas puede 
 - `styleUrl` por categoria,
 - iconos enlazados por URL remota,
 - color KML generado desde `color_hex`,
+- escala KML generada desde `tamano_icono`,
 - metadatos en `ExtendedData`, incluyendo `icono_fuente` y `color_hex`,
 - descripcion breve en texto plano o CDATA minimo,
 - solo `Placemark` con coordenadas confirmadas.
 
 Esta variante sigue sin sustituir al CSV como fuente de mantenimiento, pero reduce el riesgo de que My Maps ignore estructuras KML complejas.
+
+Valores de tamano:
+
+- `grande`: `<scale>1.3</scale>`
+- `normal`: `<scale>1.1</scale>`
+- `pequeno`: `<scale>0.9</scale>`
+
+My Maps puede simplificar algunos estilos importados desde KML. Si el tamano no se conserva exactamente, el CSV conserva `prioridad` y `tamano_icono` para ajustar el estilo manualmente por columna dentro de My Maps.
 
 ## Imagenes y videos
 

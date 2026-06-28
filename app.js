@@ -8,6 +8,8 @@ const CANONICAL_COLUMNS = [
   "capa",
   "categoria",
   "subcategoria",
+  "prioridad",
+  "tamano_icono",
   "icono_recomendado",
   "color_hex",
   "latitude",
@@ -87,6 +89,18 @@ const DEFAULT_KML_STYLE = {
   iconSource: "Material Symbols - place",
 };
 
+const ICON_SCALE_BY_SIZE = {
+  grande: "1.3",
+  normal: "1.1",
+  pequeno: "0.9",
+};
+
+const ICON_SIZE_BY_PRIORITY = {
+  imprescindible: "grande",
+  recomendable: "normal",
+  opcional: "pequeno",
+};
+
 const state = {
   rows: [],
   stopRequested: false,
@@ -140,8 +154,17 @@ function getLayer(text, category) {
   if (strategy === "categoria") return category.categoria;
   if (strategy === "dia") return "Dia 01";
   if (strategy === "zona") return els.baseZone.value || "Zona principal";
-  if (strategy === "prioridad") return "Recomendado";
+  if (strategy === "prioridad") return priorityLayerName("recomendable");
   return category.categoria;
+}
+
+function priorityLayerName(priority) {
+  const names = {
+    imprescindible: "Imprescindible",
+    recomendable: "Recomendable",
+    opcional: "Opcional",
+  };
+  return names[priority] || "Recomendable";
 }
 
 function parsePlaces() {
@@ -167,6 +190,8 @@ function parsePlaces() {
       capa: getLayer(line, category),
       categoria: category.categoria,
       subcategoria: category.subcategoria,
+      prioridad: "recomendable",
+      tamano_icono: "normal",
       icono_recomendado: category.icono,
       color_hex: category.color,
       latitude: "",
@@ -331,6 +356,8 @@ function importCsvText(text) {
     }
     row.id_lugar = row.id_lugar || slugify(row.nombre_visible || row.nombre_original || `lugar_${index + 1}`);
     row.estado = row.estado || "revisar";
+    row.prioridad = row.prioridad || "recomendable";
+    row.tamano_icono = row.tamano_icono || ICON_SIZE_BY_PRIORITY[row.prioridad] || "normal";
     row.nivel_confianza = row.nivel_confianza || "medio";
     return row;
   });
@@ -442,9 +469,20 @@ function hexToKmlColor(hexColor) {
 function styleIdForRow(row) {
   const baseStyle = styleForCategory(row.categoria);
   const colorHex = normalizeHexColor(row.color_hex, baseStyle.colorHex);
-  if (colorHex === normalizeHexColor(baseStyle.colorHex)) return baseStyle.id;
-  const suffix = colorHex.slice(1).toLowerCase();
-  return `${baseStyle.id}-${suffix}`;
+  const scaleKey = normalizeIconSize(row.tamano_icono);
+  const parts = [baseStyle.id];
+  if (colorHex !== normalizeHexColor(baseStyle.colorHex)) parts.push(colorHex.slice(1).toLowerCase());
+  if (scaleKey !== "normal") parts.push(scaleKey);
+  return parts.join("-");
+}
+
+function normalizeIconSize(value) {
+  const size = String(value || "").trim().toLowerCase();
+  return ICON_SCALE_BY_SIZE[size] ? size : "normal";
+}
+
+function iconScaleForRow(row) {
+  return ICON_SCALE_BY_SIZE[normalizeIconSize(row.tamano_icono)];
 }
 
 function kmlStylesForRows(rows) {
@@ -454,6 +492,7 @@ function kmlStylesForRows(rows) {
     const style = {
       id: styleIdForRow(row),
       color: hexToKmlColor(row.color_hex || baseStyle.colorHex),
+      scale: iconScaleForRow(row),
       iconHref: baseStyle.iconHref,
     };
     usedStyles.set(style.id, style);
@@ -461,7 +500,7 @@ function kmlStylesForRows(rows) {
   return [...usedStyles.values()].map((style) => `    <Style id="${style.id}">
       <IconStyle>
         <color>${style.color}</color>
-        <scale>1.1</scale>
+        <scale>${style.scale}</scale>
         <Icon><href>${xmlEscape(style.iconHref)}</href></Icon>
       </IconStyle>
     </Style>`).join("\n");
@@ -474,6 +513,8 @@ function extendedDataForRow(row) {
     id_lugar: row.id_lugar,
     categoria: row.categoria,
     subcategoria: row.subcategoria,
+    prioridad: row.prioridad,
+    tamano_icono: normalizeIconSize(row.tamano_icono),
     icono_fuente: baseStyle.iconSource,
     color_hex: colorHex,
     capa: row.capa,
@@ -567,6 +608,16 @@ function render() {
           ${categoryOptions(row.categoria)}
         </select>
       </td>
+      <td>
+        <select class="cell-select compact" name="prioridad_${index}" aria-label="Prioridad ${index + 1}" data-index="${index}" data-field="prioridad">
+          ${priorityOptions(row.prioridad)}
+        </select>
+      </td>
+      <td>
+        <select class="cell-select compact" name="tamano_icono_${index}" aria-label="Tamano de icono ${index + 1}" data-index="${index}" data-field="tamano_icono">
+          ${iconSizeOptions(row.tamano_icono)}
+        </select>
+      </td>
       <td><input class="cell-input narrow" name="latitude_${index}" aria-label="Latitud ${index + 1}" data-index="${index}" data-field="latitude" value="${escapeAttr(row.latitude)}" /></td>
       <td><input class="cell-input narrow" name="longitude_${index}" aria-label="Longitud ${index + 1}" data-index="${index}" data-field="longitude" value="${escapeAttr(row.longitude)}" /></td>
       <td>
@@ -601,6 +652,18 @@ function categoryOptions(selected) {
 function stateOptions(selected) {
   return ["confirmado", "revisar", "por_confirmar"]
     .map((estado) => `<option value="${estado}"${estado === selected ? " selected" : ""}>${estado}</option>`)
+    .join("");
+}
+
+function priorityOptions(selected) {
+  return ["imprescindible", "recomendable", "opcional"]
+    .map((priority) => `<option value="${priority}"${priority === selected ? " selected" : ""}>${priority}</option>`)
+    .join("");
+}
+
+function iconSizeOptions(selected) {
+  return ["grande", "normal", "pequeno"]
+    .map((size) => `<option value="${size}"${size === normalizeIconSize(selected) ? " selected" : ""}>${size}</option>`)
     .join("");
 }
 
@@ -641,6 +704,8 @@ function escapeAttr(value) {
 function updateRow(index, field, value) {
   const row = state.rows[index];
   if (!row) return;
+  const previousPriority = row.prioridad;
+  const previousSize = row.tamano_icono;
   row[field] = value;
   if (field === "categoria") {
     const rule = CATEGORY_RULES.find((item) => item.categoria === value) || DEFAULT_CATEGORY;
@@ -648,6 +713,12 @@ function updateRow(index, field, value) {
     row.icono_recomendado = rule.icono;
     row.color_hex = rule.color;
     if (els.layerStrategy.value === "categoria") row.capa = value;
+  }
+  if (field === "prioridad" && (!previousSize || previousSize === ICON_SIZE_BY_PRIORITY[previousPriority])) {
+    row.tamano_icono = ICON_SIZE_BY_PRIORITY[value] || "normal";
+  }
+  if (field === "prioridad" && els.layerStrategy.value === "prioridad") {
+    row.capa = priorityLayerName(value);
   }
   persistDraft();
   render();

@@ -110,6 +110,8 @@ La variante de My Maps debe seguir una plantilla conservadora:
   <ExtendedData>
     <Data name="id_lugar"><value>restaurante_ejemplo</value></Data>
     <Data name="categoria"><value>Gastronomia</value></Data>
+    <Data name="prioridad"><value>imprescindible</value></Data>
+    <Data name="tamano_icono"><value>grande</value></Data>
     <Data name="icono_fuente"><value>Material Symbols - restaurant</value></Data>
     <Data name="color_hex"><value>#FF7043</value></Data>
   </ExtendedData>
@@ -126,7 +128,16 @@ Reglas:
 - no incluir filas `por_confirmar`,
 - definir los estilos antes de los `Placemark`,
 - enlazar iconos remotos y no almacenar iconos locales,
-- convertir `color_hex` a color KML `aabbggrr`.
+- convertir `color_hex` a color KML `aabbggrr`,
+- convertir `tamano_icono` a `<scale>`.
+
+Escala recomendada:
+
+- `grande`: `1.3`
+- `normal`: `1.1`
+- `pequeno`: `0.9`
+
+La opcion avanzada de pre-renderizar iconos Material Symbols queda reservada para una fase posterior, porque requiere generar y alojar imagenes PNG por combinacion de icono, color y tamano.
 
 ## Mejoras futuras
 

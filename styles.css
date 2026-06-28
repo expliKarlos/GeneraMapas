@@ -337,6 +337,10 @@ td {
   font-size: 12px;
 }
 
+.cell-select.compact {
+  min-width: 118px;
+}
+
 .cell-input.narrow {
   min-width: 94px;
 }

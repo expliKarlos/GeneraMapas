@@ -13,6 +13,8 @@
 | `capa` | si | texto | Capa de My Maps. |
 | `categoria` | si | texto | Categoria principal. |
 | `subcategoria` | no | texto | Subtipo del lugar. |
+| `prioridad` | no | enum | `imprescindible`, `recomendable`, `opcional`. |
+| `tamano_icono` | no | enum | `grande`, `normal`, `pequeno`. |
 | `icono_recomendado` | no | texto | Nombre funcional del icono recomendado. |
 | `color_hex` | no | texto | Color asociado en formato `#RRGGBB`, por ejemplo `#4CAF50`. |
 | `latitude` | si, si confirmado | decimal | Latitud decimal. |
@@ -86,6 +88,8 @@ Los estilos KML para My Maps se generan desde una configuracion por categoria:
 - El KML convierte `color_hex` a formato KML `aabbggrr`.
 - El icono se enlaza por URL remota; no se almacenan iconos locales.
 - `ExtendedData` incluye `icono_fuente` y `color_hex`.
+- `tamano_icono` se traduce a `<scale>`: `grande = 1.3`, `normal = 1.1`, `pequeno = 0.9`.
+- `prioridad` permite diferenciar importancia sin cambiar la categoria.
 
 Ejemplo:
 
@@ -115,5 +119,5 @@ En una fase posterior, el usuario podra cambiar los colores antes de descargar e
 El CSV debe usar estas columnas, en este orden:
 
 ```csv
-id_lugar,nombre_visible,nombre_original,estado,direccion,google_place_id,capa,categoria,subcategoria,icono_recomendado,color_hex,latitude,longitude,descripcion_breve,datos_interes,enlace_util,image_url,video_url,media_credit,nivel_confianza,nota_desambiguacion,wkt,fuentes_consultadas
+id_lugar,nombre_visible,nombre_original,estado,direccion,google_place_id,capa,categoria,subcategoria,prioridad,tamano_icono,icono_recomendado,color_hex,latitude,longitude,descripcion_breve,datos_interes,enlace_util,image_url,video_url,media_credit,nivel_confianza,nota_desambiguacion,wkt,fuentes_consultadas
 ```

@@ -87,6 +87,8 @@ La tabla permite editar:
 - Lugar estandarizado.
 - Capa.
 - Categoria.
+- Prioridad.
+- Tamano de icono.
 - Latitud.
 - Longitud.
 - Estado.
@@ -98,6 +100,18 @@ Estados:
 - `por_confirmar`: no debe tratarse como definitivo.
 
 Puedes eliminar una fila con el boton `x`.
+
+Prioridades:
+
+- `imprescindible`: lugar muy importante.
+- `recomendable`: lugar normal.
+- `opcional`: lugar secundario.
+
+Tamanos de icono:
+
+- `grande`: marcador mas visible.
+- `normal`: marcador por defecto.
+- `pequeno`: marcador menos destacado.
 
 ## Paso 5: geocodificar con OpenStreetMap
 
@@ -157,6 +171,7 @@ Para actualizar un mapa existente:
 - Usa el CSV como fuente principal de mantenimiento.
 - Usa el KML para My Maps solo cuando prefieras importar marcadores con estilos/metadatos desde KML.
 - Los colores base se asignan por categoria. En una fase posterior se podran cambiar antes de descargar el KML.
+- El tamano de icono ayuda a distinguir visualmente la importancia de cada lugar.
 
 ## Problemas frecuentes
 

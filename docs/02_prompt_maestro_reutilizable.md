@@ -72,6 +72,8 @@ Devuelve cada lugar con estos campos:
 - `capa`
 - `categoria`
 - `subcategoria`
+- `prioridad`
+- `tamano_icono`
 - `icono_recomendado`
 - `color_hex`
 - `latitude`

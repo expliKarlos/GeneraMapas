@@ -15,6 +15,7 @@ La app funciona en el navegador, sin backend y sin instalacion. Esta pensada par
 - Exportar CSV por capas.
 - Exportar KML de backup.
 - Exportar KML adaptado para My Maps con estilos en `Document`.
+- Personalizar prioridad y tamano de icono por lugar.
 - Generar instrucciones de importacion para Google My Maps.
 
 ## Demo local
@@ -98,6 +99,21 @@ GeneraMapas ofrece dos salidas KML:
 - Los iconos KML se enlazan desde una coleccion remota y los colores se generan desde `color_hex`.
 
 El CSV sigue siendo la fuente principal de mantenimiento. El KML para My Maps es una alternativa de importacion cuando se quiere controlar mejor iconos y metadatos.
+
+## Prioridad y tamano de iconos
+
+Cada lugar puede tener:
+
+- `prioridad`: `imprescindible`, `recomendable` u `opcional`.
+- `tamano_icono`: `grande`, `normal` o `pequeno`.
+
+Por defecto, todos los lugares empiezan como `recomendable` y `normal`.
+
+En el KML para My Maps, el tamano se traduce a `<scale>`:
+
+- `grande`: `1.3`
+- `normal`: `1.1`
+- `pequeno`: `0.9`
 
 ## Licencia
 
