@@ -89,7 +89,14 @@ La IA se usa solo para mejorar la identificacion previa del lugar:
 
 No debe generar coordenadas ni sustituir a un geocoder real.
 
-En GitHub Pages la integracion es client-side: la API key se introduce en el navegador y se guarda solo en `sessionStorage`. Esto es aceptable para pruebas o uso personal controlado, pero no para una app publica con usuarios externos. Para ese caso, el siguiente paso tecnico recomendable es un backend ligero que:
+En GitHub Pages la integracion es client-side: el token o API key se introduce en el navegador y se guarda solo en `sessionStorage`.
+
+Proveedores disponibles:
+
+- `GitHub Models`: opcion recomendada para uso libre. Cada usuario introduce su token de GitHub con permiso `models:read`, asi el consumo no queda asociado a una API del autor.
+- `OpenAI`: alternativa para usuarios que prefieran usar su propia API key de OpenAI.
+
+Esto es aceptable para pruebas o uso personal controlado. Para una app publica con login comodo, el siguiente paso tecnico recomendable es un backend ligero que:
 
 - proteja la API key,
 - limite cuotas,

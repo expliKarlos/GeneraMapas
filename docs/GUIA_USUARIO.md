@@ -140,11 +140,15 @@ La IA no decide coordenadas. Su funcion es:
 
 Para usarlo:
 
-1. Introduce tu API key de OpenAI en el panel `Resolucion con IA`.
-2. Pulsa `Resolver con IA`.
-3. Revisa los cambios en la tabla.
+1. Elige proveedor: `GitHub Models` u `OpenAI`.
+2. Introduce tu token/API key.
+3. Revisa el modelo propuesto.
+4. Pulsa `Resolver con IA`.
+5. Revisa los cambios en la tabla.
 
-La clave se guarda solo durante la sesion del navegador. Si la app se usa de forma publica por muchas personas, lo correcto es mover este paso a un backend propio.
+Para GitHub Models necesitas un token de GitHub del propio usuario con permiso `models:read`. La app no usa una API del autor.
+
+La clave se guarda solo durante la sesion del navegador. Si la app se usa de forma publica con experiencia de login completa, lo correcto es mover este paso a un backend propio.
 
 ## Paso 6: buscar candidatos con OpenStreetMap
 

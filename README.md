@@ -9,7 +9,7 @@ La app funciona en el navegador, sin backend y sin instalacion. Esta pensada par
 - Pegar una lista de lugares.
 - Importar un CSV existente.
 - Preparar una tabla editable.
-- Resolver nombres ambiguos con IA opcional.
+- Resolver nombres ambiguos con IA opcional mediante GitHub Models u OpenAI.
 - Buscar varios candidatos OSM antes de confirmar coordenadas.
 - Geocodificar opcionalmente con OpenStreetMap/Nominatim.
 - Cachear resultados en el navegador.
@@ -60,7 +60,7 @@ https://TU_USUARIO.github.io/GeneraMapas/
 2. Completa nombre del proyecto y zona base.
 3. Pega lugares o importa CSV.
 4. Pulsa `Preparar tabla`.
-5. Si los nombres son ambiguos, pulsa `Resolver con IA`.
+5. Si los nombres son ambiguos, elige proveedor IA y pulsa `Resolver con IA`.
 6. Pulsa `Buscar candidatos OSM` y elige el candidato correcto en la tabla.
 7. Usa `Geocodificar pendientes con OSM` solo si aceptas la primera coincidencia automaticamente.
 8. Revisa y edita la tabla.
@@ -82,11 +82,13 @@ https://TU_USUARIO.github.io/GeneraMapas/
 
 - La app procesa los datos en el navegador.
 - El borrador se guarda en `localStorage`.
-- La API key de OpenAI, si se usa, se guarda solo en `sessionStorage`.
+- El token/API key de IA, si se usa, se guarda solo en `sessionStorage`.
 - La geocodificacion OSM solo se ejecuta cuando el usuario pulsa el boton correspondiente.
 - No hay servidor propio recibiendo tus datos.
 
-La resolucion con IA desde GitHub Pages es util para uso personal, pero no es el modelo ideal para una app publica con muchas personas porque la clave se usa desde el navegador. Para uso compartido serio conviene anadir un backend ligero que proteja la clave y aplique limites.
+La opcion recomendada para uso libre es `GitHub Models`: cada usuario introduce su propio token de GitHub con permiso `models:read`, por lo que el consumo no queda asociado a una API del autor. La alternativa `OpenAI` queda disponible para usuarios que prefieran usar su propia API key de OpenAI.
+
+No escribas tokens ni claves en el codigo del repositorio. Para uso publico con experiencia de login completa, el siguiente paso seria un backend ligero con autenticacion.
 
 ## OpenStreetMap / Nominatim
 

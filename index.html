@@ -97,15 +97,22 @@
         <div class="ai-box">
           <h3>Resolucion con IA</h3>
           <label>
-            API key OpenAI
-            <input id="aiApiKey" type="password" autocomplete="off" placeholder="sk-..." />
+            Proveedor
+            <select id="aiProvider">
+              <option value="github" selected>GitHub Models</option>
+              <option value="openai">OpenAI</option>
+            </select>
+          </label>
+          <label>
+            Token o API key
+            <input id="aiApiKey" type="password" autocomplete="off" placeholder="github_pat_... o sk-..." />
           </label>
           <label>
             Modelo
-            <input id="aiModel" type="text" value="gpt-5.5-mini" />
+            <input id="aiModel" type="text" value="openai/gpt-4.1" />
           </label>
           <p class="small">
-            La clave se guarda solo en esta sesion del navegador. Para uso publico conviene un backend propio.
+            GitHub Models usa un token del usuario con permiso models:read. La clave se guarda solo en esta sesion del navegador.
           </p>
         </div>
       </aside>

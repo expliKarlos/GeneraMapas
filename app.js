@@ -111,6 +111,11 @@ const ICON_SIZE_BY_PRIORITY = {
   opcional: "pequeno",
 };
 
+const AI_DEFAULT_MODELS = {
+  github: "openai/gpt-4.1",
+  openai: "gpt-5.5-mini",
+};
+
 const SUBCATEGORY_ICONS = [
   { categoria: "Gastronomia", subcategoria: "Restaurantes", iconName: "restaurant", codePoint: "e56c" },
   { categoria: "Gastronomia", subcategoria: "Cafeterias y Desayunos", iconName: "coffee_maker", codePoint: "eff0" },
@@ -150,6 +155,7 @@ const els = {
   searchCandidatesButton: document.querySelector("#searchCandidatesButton"),
   geocodeButton: document.querySelector("#geocodeButton"),
   stopButton: document.querySelector("#stopButton"),
+  aiProvider: document.querySelector("#aiProvider"),
   aiApiKey: document.querySelector("#aiApiKey"),
   aiModel: document.querySelector("#aiModel"),
   loadExampleButton: document.querySelector("#loadExampleButton"),
@@ -443,10 +449,19 @@ function acceptCandidate(rowIndex, candidateIndex, { renderAfter = true } = {}) 
   if (renderAfter) render();
 }
 
-function openAiApiKey() {
+function aiTokenStorageKey(provider = els.aiProvider.value) {
+  return `generamapas_${provider}_ai_key`;
+}
+
+function currentAiProvider() {
+  return els.aiProvider.value || "github";
+}
+
+function aiApiKey() {
   const key = String(els.aiApiKey.value || "").trim();
-  if (key) sessionStorage.setItem("generamapas_openai_key", key);
-  return key || sessionStorage.getItem("generamapas_openai_key") || "";
+  const storageKey = aiTokenStorageKey();
+  if (key) sessionStorage.setItem(storageKey, key);
+  return key || sessionStorage.getItem(storageKey) || "";
 }
 
 function aiSchema() {
@@ -492,12 +507,55 @@ function aiSchema() {
   };
 }
 
+function aiSystemPrompt() {
+  return [
+    "Eres un asistente de normalizacion de lugares para mapas de viaje.",
+    "Devuelve solo JSON valido segun el esquema solicitado.",
+    "No inventes coordenadas.",
+    "Propon una consulta OSM precisa y una categoria/capa probable.",
+  ].join(" ");
+}
+
+function aiUserPayload() {
+  return {
+    zona_base: els.baseZone.value,
+    codigo_pais: countryCodeValue(),
+    categorias_validas: Object.keys(KML_CATEGORY_STYLES),
+    subcategorias_disponibles: SUBCATEGORY_ICONS.map((item) => ({
+      categoria: item.categoria,
+      subcategoria: item.subcategoria,
+    })),
+    lugares: state.rows.map((row, index) => ({
+      indice: index,
+      nombre_original: row.nombre_original,
+      nombre_visible: row.nombre_visible,
+      capa: row.capa,
+      categoria: row.categoria,
+      subcategoria: row.subcategoria,
+    })),
+  };
+}
+
 function responseText(data) {
   if (data.output_text) return data.output_text;
   return (data.output || [])
     .flatMap((item) => item.content || [])
     .map((content) => content.text || "")
     .join("");
+}
+
+function chatCompletionText(data) {
+  return data.choices?.[0]?.message?.content || "";
+}
+
+function parseJsonFromText(text) {
+  const cleaned = String(text || "")
+    .trim()
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+  return JSON.parse(cleaned);
 }
 
 function applyAiResult(result) {
@@ -523,67 +581,89 @@ function applyAiResult(result) {
   }
 }
 
+async function callOpenAi(key) {
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${key}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: els.aiModel.value.trim() || AI_DEFAULT_MODELS.openai,
+      input: [
+        {
+          role: "system",
+          content: aiSystemPrompt(),
+        },
+        {
+          role: "user",
+          content: JSON.stringify(aiUserPayload()),
+        },
+      ],
+      text: {
+        format: {
+          type: "json_schema",
+          name: "generamapas_lugares",
+          schema: aiSchema(),
+          strict: true,
+        },
+      },
+    }),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error?.message || `OpenAI devolvio HTTP ${response.status}`);
+  return JSON.parse(responseText(data));
+}
+
+async function callGitHubModels(key) {
+  const response = await fetch("https://models.github.ai/inference/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${key}`,
+        "Content-Type": "application/json",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+      body: JSON.stringify({
+        model: els.aiModel.value.trim() || AI_DEFAULT_MODELS.github,
+        messages: [
+          {
+            role: "system",
+            content: `${aiSystemPrompt()} La respuesta debe tener esta forma exacta: {"lugares":[{"indice":0,"nombre_visible":"","categoria":"Visitar y Cultura","subcategoria":"","capa":"","prioridad":"recomendable","tamano_icono":"normal","consulta_osm":"","descripcion_breve":"","nota_desambiguacion":"","nivel_confianza":"medio"}]}`,
+          },
+          {
+            role: "user",
+            content: JSON.stringify(aiUserPayload()),
+          },
+        ],
+        temperature: 0,
+        max_tokens: 2000,
+      }),
+    });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error?.message || `GitHub Models devolvio HTTP ${response.status}`);
+  return parseJsonFromText(chatCompletionText(data));
+}
+
 async function resolveWithAi() {
   if (!state.rows.length) parsePlaces();
   if (!state.rows.length) return;
 
-  const key = openAiApiKey();
+  const provider = currentAiProvider();
+  const key = aiApiKey();
   if (!key) {
-    setStatus("Falta API key", "error");
-    alert("Introduce una API key de OpenAI para usar la resolucion con IA.");
+    setStatus("Falta token IA", "error");
+    alert(provider === "github"
+      ? "Introduce un token de GitHub con permiso models:read para usar GitHub Models."
+      : "Introduce una API key de OpenAI para usar la resolucion con IA.");
     return;
   }
 
   setStatus("Resolviendo con IA", "busy");
   els.resolveAiButton.disabled = true;
   try {
-    const response = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${key}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: els.aiModel.value.trim() || "gpt-5.5-mini",
-        input: [
-          {
-            role: "system",
-            content: "Eres un asistente de normalizacion de lugares para mapas de viaje. Devuelve solo JSON valido segun el esquema. No inventes coordenadas. Propon una consulta OSM precisa y una categoria/capa probable.",
-          },
-          {
-            role: "user",
-            content: JSON.stringify({
-              zona_base: els.baseZone.value,
-              codigo_pais: countryCodeValue(),
-              categorias_validas: Object.keys(KML_CATEGORY_STYLES),
-              subcategorias_disponibles: SUBCATEGORY_ICONS.map((item) => ({
-                categoria: item.categoria,
-                subcategoria: item.subcategoria,
-              })),
-              lugares: state.rows.map((row, index) => ({
-                indice: index,
-                nombre_original: row.nombre_original,
-                nombre_visible: row.nombre_visible,
-                capa: row.capa,
-                categoria: row.categoria,
-                subcategoria: row.subcategoria,
-              })),
-            }),
-          },
-        ],
-        text: {
-          format: {
-            type: "json_schema",
-            name: "generamapas_lugares",
-            schema: aiSchema(),
-            strict: true,
-          },
-        },
-      }),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error?.message || `OpenAI devolvio HTTP ${response.status}`);
-    applyAiResult(JSON.parse(responseText(data)));
+    const result = provider === "github" ? await callGitHubModels(key) : await callOpenAi(key);
+    applyAiResult(result);
     persistDraft();
     render();
     setStatus("Listo", "ready");
@@ -1077,6 +1157,7 @@ function persistDraft() {
     countryCode: els.countryCode.value,
     layerStrategy: els.layerStrategy.value,
     mapVersion: els.mapVersion.value,
+    aiProvider: els.aiProvider.value,
     aiModel: els.aiModel.value,
     placesInput: els.placesInput.value,
     rows: state.rows,
@@ -1094,6 +1175,7 @@ function restoreDraft() {
     els.countryCode.value = data.countryCode || els.countryCode.value;
     els.layerStrategy.value = data.layerStrategy || els.layerStrategy.value;
     els.mapVersion.value = data.mapVersion || els.mapVersion.value;
+    els.aiProvider.value = data.aiProvider || els.aiProvider.value;
     els.aiModel.value = data.aiModel || els.aiModel.value;
     els.placesInput.value = data.placesInput || "";
     state.rows = data.rows || [];
@@ -1170,16 +1252,31 @@ els.table.addEventListener("click", (event) => {
   }
 });
 
-els.aiApiKey.value = sessionStorage.getItem("generamapas_openai_key") || "";
+function updateAiProviderUi({ resetModel = false } = {}) {
+  const provider = currentAiProvider();
+  const model = els.aiModel.value.trim();
+  const matchesProvider = provider === "github" ? model.includes("/") : !model.includes("/");
+  if (resetModel || !model || !matchesProvider) {
+    els.aiModel.value = AI_DEFAULT_MODELS[provider];
+  }
+  els.aiApiKey.value = sessionStorage.getItem(aiTokenStorageKey(provider)) || "";
+}
+
+els.aiProvider.addEventListener("change", () => {
+  updateAiProviderUi({ resetModel: true });
+  persistDraft();
+});
 els.aiApiKey.addEventListener("input", () => {
   const key = String(els.aiApiKey.value || "").trim();
-  if (key) sessionStorage.setItem("generamapas_openai_key", key);
-  else sessionStorage.removeItem("generamapas_openai_key");
+  const storageKey = aiTokenStorageKey();
+  if (key) sessionStorage.setItem(storageKey, key);
+  else sessionStorage.removeItem(storageKey);
 });
 
-for (const input of [els.projectName, els.baseZone, els.countryCode, els.layerStrategy, els.mapVersion, els.aiModel, els.placesInput]) {
+for (const input of [els.projectName, els.baseZone, els.countryCode, els.layerStrategy, els.mapVersion, els.aiProvider, els.aiModel, els.placesInput]) {
   input.addEventListener("input", persistDraft);
 }
 
 restoreDraft();
+updateAiProviderUi();
 render();
