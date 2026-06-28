@@ -1,4 +1,4 @@
-# GeneraMapas
+﻿# GeneraMapas
 
 Aplicacion estatica para preparar archivos importables en Google My Maps a partir de una lista de lugares de viaje.
 
@@ -90,4 +90,4 @@ No debe usarse como autocompletado continuo ni geocodificacion masiva.
 
 ## Licencia
 
-MIT. Ver [LICENSE](LICENSE).
+GPL-3.0. Ver [LICENSE](LICENSE).
