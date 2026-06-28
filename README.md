@@ -95,6 +95,7 @@ GeneraMapas ofrece dos salidas KML:
 
 - `KML backup`: KML generico de respaldo para Google Earth o intercambio.
 - `KML para My Maps`: KML con estilos definidos solo en `Document`, sin `Folder`, sin `hotSpot` y con metadatos en `ExtendedData`.
+- Los iconos KML se enlazan desde una coleccion remota y los colores se generan desde `color_hex`.
 
 El CSV sigue siendo la fuente principal de mantenimiento. El KML para My Maps es una alternativa de importacion cuando se quiere controlar mejor iconos y metadatos.
 

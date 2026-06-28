@@ -2,6 +2,8 @@ categorias:
   - categoria: "Gastronomia"
     color_google_maps: "Naranja / Coral"
     color_hex: "#FF7043"
+    kml_icon_href: "https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png"
+    kml_icon_source: "Material Symbols - restaurant"
     subcategorias:
       - nombre: "Restaurantes"
         icono: "Utensils"
@@ -13,6 +15,8 @@ categorias:
   - categoria: "Visitar y Cultura"
     color_google_maps: "Turquesa / Azul Claro"
     color_hex: "#4DD0E1"
+    kml_icon_href: "https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png"
+    kml_icon_source: "Material Symbols - museum"
     subcategorias:
       - nombre: "Monumentos y Puntos Historicos"
         icono: "Museum"
@@ -24,6 +28,8 @@ categorias:
   - categoria: "Compras y Servicios"
     color_google_maps: "Azul Real"
     color_hex: "#1A73E8"
+    kml_icon_href: "https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png"
+    kml_icon_source: "Material Symbols - shopping_bag"
     subcategorias:
       - nombre: "Zonas Comerciales y Tiendas"
         icono: "Shopping bag"
@@ -33,6 +39,8 @@ categorias:
   - categoria: "Naturaleza"
     color_google_maps: "Verde"
     color_hex: "#4CAF50"
+    kml_icon_href: "https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png"
+    kml_icon_source: "Material Symbols - park"
     subcategorias:
       - nombre: "Parques y Jardines Urbanos"
         icono: "Park"
@@ -44,6 +52,8 @@ categorias:
   - categoria: "Alojamiento"
     color_google_maps: "Morado / Violeta"
     color_hex: "#7E57C2"
+    kml_icon_href: "https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png"
+    kml_icon_source: "Material Symbols - hotel"
     subcategorias:
       - nombre: "Hotel o Base Principal"
         icono: "Hotel"
@@ -53,6 +63,8 @@ categorias:
   - categoria: "Logistica y Transporte"
     color_google_maps: "Gris Azulado"
     color_hex: "#607D8B"
+    kml_icon_href: "https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png"
+    kml_icon_source: "Material Symbols - directions_transit"
     subcategorias:
       - nombre: "Estaciones"
         icono: "Directions transit"

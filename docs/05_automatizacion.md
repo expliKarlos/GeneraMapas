@@ -100,7 +100,7 @@ La variante de My Maps debe seguir una plantilla conservadora:
   <IconStyle>
     <color>ff4370ff</color>
     <scale>1.1</scale>
-    <Icon><href>https://maps.google.com/mapfiles/kml/paddle/orange-circle.png</href></Icon>
+    <Icon><href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href></Icon>
   </IconStyle>
 </Style>
 
@@ -110,6 +110,8 @@ La variante de My Maps debe seguir una plantilla conservadora:
   <ExtendedData>
     <Data name="id_lugar"><value>restaurante_ejemplo</value></Data>
     <Data name="categoria"><value>Gastronomia</value></Data>
+    <Data name="icono_fuente"><value>Material Symbols - restaurant</value></Data>
+    <Data name="color_hex"><value>#FF7043</value></Data>
   </ExtendedData>
   <description>Texto plano breve</description>
   <Point><coordinates>lon,lat,0</coordinates></Point>
@@ -122,7 +124,9 @@ Reglas:
 - no usar `hotSpot`,
 - no meter metadatos principales en `description`,
 - no incluir filas `por_confirmar`,
-- definir los estilos antes de los `Placemark`.
+- definir los estilos antes de los `Placemark`,
+- enlazar iconos remotos y no almacenar iconos locales,
+- convertir `color_hex` a color KML `aabbggrr`.
 
 ## Mejoras futuras
 

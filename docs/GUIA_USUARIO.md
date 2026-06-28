@@ -127,7 +127,7 @@ Usa los botones inferiores:
 - `Exportar CSV maestro`: recomendado para mantener el proyecto.
 - `Exportar CSV por capas`: util si quieres importar cada capa por separado.
 - `Exportar KML backup`: opcional, pensado para respaldo o Google Earth.
-- `KML para My Maps`: KML con estilos definidos en `Document`, sin carpetas y con metadatos en `ExtendedData`.
+- `KML para My Maps`: KML con estilos definidos en `Document`, sin carpetas, iconos remotos, colores por categoria y metadatos en `ExtendedData`.
 - `Instrucciones`: genera una guia de importacion para tu mapa.
 
 ## Paso 7: importar en Google My Maps
@@ -156,6 +156,7 @@ Para actualizar un mapa existente:
 - Manten una version clara del mapa, por ejemplo: `Viaje Innsbruck v1.0 2026-06-28`.
 - Usa el CSV como fuente principal de mantenimiento.
 - Usa el KML para My Maps solo cuando prefieras importar marcadores con estilos/metadatos desde KML.
+- Los colores base se asignan por categoria. En una fase posterior se podran cambiar antes de descargar el KML.
 
 ## Problemas frecuentes
 

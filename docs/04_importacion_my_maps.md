@@ -68,7 +68,9 @@ Cuando se quiera usar KML como via de importacion en My Maps, GeneraMapas puede 
 - sin `Folder`,
 - sin `hotSpot`,
 - `styleUrl` por categoria,
-- metadatos en `ExtendedData`,
+- iconos enlazados por URL remota,
+- color KML generado desde `color_hex`,
+- metadatos en `ExtendedData`, incluyendo `icono_fuente` y `color_hex`,
 - descripcion breve en texto plano o CDATA minimo,
 - solo `Placemark` con coordenadas confirmadas.
 

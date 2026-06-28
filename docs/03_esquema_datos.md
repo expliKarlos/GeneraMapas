@@ -13,8 +13,8 @@
 | `capa` | si | texto | Capa de My Maps. |
 | `categoria` | si | texto | Categoria principal. |
 | `subcategoria` | no | texto | Subtipo del lugar. |
-| `icono_recomendado` | no | texto | Nombre del icono recomendado. |
-| `color_hex` | no | texto | Color asociado, por ejemplo `#4CAF50`. |
+| `icono_recomendado` | no | texto | Nombre funcional del icono recomendado. |
+| `color_hex` | no | texto | Color asociado en formato `#RRGGBB`, por ejemplo `#4CAF50`. |
 | `latitude` | si, si confirmado | decimal | Latitud decimal. |
 | `longitude` | si, si confirmado | decimal | Longitud decimal. |
 | `descripcion_breve` | no | texto | Resumen util y conciso. |
@@ -77,6 +77,29 @@ Evitar:
 - HTML complejo que dependa de scripts, `iframe` o imagenes embebidas.
 
 Para My Maps, tratar `image_url` y `video_url` como referencias/enlaces. Para fotos visibles, preferir la funcion nativa de fotos de My Maps o importacion desde Google Drive/Photos.
+
+## Reglas de estilos KML para My Maps
+
+Los estilos KML para My Maps se generan desde una configuracion por categoria:
+
+- `color_hex` se guarda como dato legible.
+- El KML convierte `color_hex` a formato KML `aabbggrr`.
+- El icono se enlaza por URL remota; no se almacenan iconos locales.
+- `ExtendedData` incluye `icono_fuente` y `color_hex`.
+
+Ejemplo:
+
+```xml
+<Style id="style-gastronomia">
+  <IconStyle>
+    <color>ff4370ff</color>
+    <scale>1.1</scale>
+    <Icon><href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href></Icon>
+  </IconStyle>
+</Style>
+```
+
+En una fase posterior, el usuario podra cambiar los colores antes de descargar el KML para My Maps.
 
 ## Reglas de coordenadas
 

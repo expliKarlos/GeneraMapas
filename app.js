@@ -39,43 +39,52 @@ const DEFAULT_CATEGORY = {
   color: "#4DD0E1",
 };
 
+const MAPSPRO_BLANK_ICON = "https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png";
+
 const KML_CATEGORY_STYLES = {
   "Gastronomia": {
     id: "style-gastronomia",
-    color: "ff4370ff",
-    icon: "https://maps.google.com/mapfiles/kml/paddle/orange-circle.png",
+    colorHex: "#FF7043",
+    iconHref: MAPSPRO_BLANK_ICON,
+    iconSource: "Material Symbols - restaurant",
   },
   "Visitar y Cultura": {
     id: "style-cultura",
-    color: "ffe1d04d",
-    icon: "https://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png",
+    colorHex: "#4DD0E1",
+    iconHref: MAPSPRO_BLANK_ICON,
+    iconSource: "Material Symbols - museum",
   },
   "Compras y Servicios": {
     id: "style-compras",
-    color: "ffe8731a",
-    icon: "https://maps.google.com/mapfiles/kml/paddle/blu-circle.png",
+    colorHex: "#1A73E8",
+    iconHref: MAPSPRO_BLANK_ICON,
+    iconSource: "Material Symbols - shopping_bag",
   },
   "Naturaleza": {
     id: "style-naturaleza",
-    color: "ff50af4c",
-    icon: "https://maps.google.com/mapfiles/kml/paddle/grn-circle.png",
+    colorHex: "#4CAF50",
+    iconHref: MAPSPRO_BLANK_ICON,
+    iconSource: "Material Symbols - park",
   },
   "Alojamiento": {
     id: "style-alojamiento",
-    color: "ffc2577e",
-    icon: "https://maps.google.com/mapfiles/kml/paddle/purple-circle.png",
+    colorHex: "#7E57C2",
+    iconHref: MAPSPRO_BLANK_ICON,
+    iconSource: "Material Symbols - hotel",
   },
   "Logistica y Transporte": {
     id: "style-transporte",
-    color: "ff8b7d60",
-    icon: "https://maps.google.com/mapfiles/kml/paddle/wht-circle.png",
+    colorHex: "#607D8B",
+    iconHref: MAPSPRO_BLANK_ICON,
+    iconSource: "Material Symbols - directions_transit",
   },
 };
 
 const DEFAULT_KML_STYLE = {
   id: "style-generico",
-  color: "ff8b7d60",
-  icon: "https://maps.google.com/mapfiles/kml/paddle/wht-circle.png",
+  colorHex: "#607D8B",
+  iconHref: MAPSPRO_BLANK_ICON,
+  iconSource: "Material Symbols - place",
 };
 
 const state = {
@@ -416,26 +425,57 @@ function styleForCategory(category) {
   return KML_CATEGORY_STYLES[category] || DEFAULT_KML_STYLE;
 }
 
+function normalizeHexColor(value, fallback = "#607D8B") {
+  const color = String(value || "").trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(color)) return color.toUpperCase();
+  return fallback;
+}
+
+function hexToKmlColor(hexColor) {
+  const normalized = normalizeHexColor(hexColor).slice(1);
+  const red = normalized.slice(0, 2);
+  const green = normalized.slice(2, 4);
+  const blue = normalized.slice(4, 6);
+  return `ff${blue}${green}${red}`.toLowerCase();
+}
+
+function styleIdForRow(row) {
+  const baseStyle = styleForCategory(row.categoria);
+  const colorHex = normalizeHexColor(row.color_hex, baseStyle.colorHex);
+  if (colorHex === normalizeHexColor(baseStyle.colorHex)) return baseStyle.id;
+  const suffix = colorHex.slice(1).toLowerCase();
+  return `${baseStyle.id}-${suffix}`;
+}
+
 function kmlStylesForRows(rows) {
   const usedStyles = new Map();
   rows.forEach((row) => {
-    const style = styleForCategory(row.categoria);
+    const baseStyle = styleForCategory(row.categoria);
+    const style = {
+      id: styleIdForRow(row),
+      color: hexToKmlColor(row.color_hex || baseStyle.colorHex),
+      iconHref: baseStyle.iconHref,
+    };
     usedStyles.set(style.id, style);
   });
   return [...usedStyles.values()].map((style) => `    <Style id="${style.id}">
       <IconStyle>
         <color>${style.color}</color>
         <scale>1.1</scale>
-        <Icon><href>${xmlEscape(style.icon)}</href></Icon>
+        <Icon><href>${xmlEscape(style.iconHref)}</href></Icon>
       </IconStyle>
     </Style>`).join("\n");
 }
 
 function extendedDataForRow(row) {
+  const baseStyle = styleForCategory(row.categoria);
+  const colorHex = normalizeHexColor(row.color_hex, baseStyle.colorHex);
   const dataFields = {
     id_lugar: row.id_lugar,
     categoria: row.categoria,
     subcategoria: row.subcategoria,
+    icono_fuente: baseStyle.iconSource,
+    color_hex: colorHex,
     capa: row.capa,
     estado: row.estado,
     direccion: row.direccion,
@@ -464,10 +504,9 @@ function exportMyMapsKml() {
   const valid = state.rows.filter((row) => row.latitude && row.longitude && row.estado !== "por_confirmar");
   const styles = kmlStylesForRows(valid);
   const placemarks = valid.map((row) => {
-    const style = styleForCategory(row.categoria);
     return `    <Placemark id="${xmlEscape(row.id_lugar)}">
       <name>${xmlEscape(row.nombre_visible)}</name>
-      <styleUrl>#${style.id}</styleUrl>
+      <styleUrl>#${styleIdForRow(row)}</styleUrl>
       <ExtendedData>
 ${extendedDataForRow(row)}
       </ExtendedData>
