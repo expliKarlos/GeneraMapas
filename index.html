@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GeneraMapas</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23007f7a'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Arial' font-size='18' font-weight='700' fill='white'%3EM%3C/text%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">M</div>
+        <div>
+          <h1>GeneraMapas</h1>
+          <p>Asistente estatico para preparar CSV de Google My Maps</p>
+        </div>
+      </div>
+      <div class="header-status">
+        <span id="exportStatus" class="status-dot status-ready">Listo</span>
+        <button id="resetButton" class="icon-button" type="button" title="Limpiar datos guardados" aria-label="Limpiar datos guardados">
+          R
+        </button>
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <section class="panel project-panel" aria-labelledby="projectTitle">
+        <h2 id="projectTitle">Proyecto</h2>
+        <label>
+          Nombre del proyecto
+          <input id="projectName" type="text" maxlength="100" value="Viaje de vacaciones" />
+        </label>
+        <label>
+          Zona base
+          <input id="baseZone" type="text" value="Innsbruck, Austria" />
+        </label>
+        <label>
+          Estrategia de capas
+          <select id="layerStrategy">
+            <option value="categoria">Por categoria</option>
+            <option value="dia">Por dia</option>
+            <option value="zona">Por zona</option>
+            <option value="prioridad">Por prioridad</option>
+          </select>
+        </label>
+        <label>
+          Version del mapa
+          <input id="mapVersion" type="text" value="v1.0" />
+        </label>
+        <div class="note">
+          Se generaran archivos locales. La importacion final en My Maps la realiza el usuario.
+        </div>
+      </section>
+
+      <section class="panel input-panel" aria-labelledby="inputTitle">
+        <div class="panel-heading">
+          <h2 id="inputTitle">1. Pegar lista de lugares</h2>
+          <div class="inline-actions">
+            <button id="loadExampleButton" class="ghost-button" type="button">Cargar ejemplo</button>
+            <button id="importCsvButton" class="ghost-button" type="button">Importar CSV</button>
+            <input id="csvFileInput" class="visually-hidden" type="file" accept=".csv,text/csv" />
+          </div>
+        </div>
+        <textarea id="placesInput" spellcheck="false" placeholder="Un lugar por linea. Puedes incluir nombre, ciudad o direccion."></textarea>
+        <div class="action-row">
+          <button id="parseButton" class="primary-button" type="button">Preparar tabla</button>
+          <button id="geocodeButton" class="secondary-button" type="button">Geocodificar pendientes con OSM</button>
+          <button id="stopButton" class="ghost-button" type="button" disabled>Detener</button>
+        </div>
+      </section>
+
+      <aside class="panel status-panel" aria-labelledby="statusTitle">
+        <h2 id="statusTitle">Validacion y estado</h2>
+        <div class="metric">
+          <span>Consultas OSM esta sesion</span>
+          <strong id="osmCount">0</strong>
+        </div>
+        <div class="metric">
+          <span>Cache local</span>
+          <strong id="cacheCount">0</strong>
+        </div>
+        <div class="metric">
+          <span>Lugares listos</span>
+          <strong id="readyCount">0</strong>
+        </div>
+        <div class="checks" id="checks"></div>
+        <p class="small">
+          OSM/Nominatim se consulta solo al pulsar el boton. Se aplica pausa de 1 segundo y cache local.
+        </p>
+      </aside>
+
+      <section class="panel table-panel" aria-labelledby="previewTitle">
+        <div class="panel-heading">
+          <h2 id="previewTitle">Vista previa</h2>
+          <span id="rowSummary" class="summary">0 lugares</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Lugar original</th>
+                <th>Lugar estandarizado</th>
+                <th>Capa</th>
+                <th>Categoria</th>
+                <th>Latitud</th>
+                <th>Longitud</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="placesTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="exports" aria-label="Exportaciones">
+        <button id="exportMasterButton" class="export-card primary-export" type="button">
+          <span class="export-icon" aria-hidden="true">CSV</span>
+          <span><strong>Exportar CSV maestro</strong><small>Un archivo con todos los lugares</small></span>
+        </button>
+        <button id="exportLayersButton" class="export-card" type="button">
+          <span class="export-icon" aria-hidden="true">CAP</span>
+          <span><strong>Exportar CSV por capas</strong><small>Un archivo por cada capa</small></span>
+        </button>
+        <button id="exportKmlButton" class="export-card" type="button">
+          <span class="export-icon" aria-hidden="true">KML</span>
+          <span><strong>Exportar KML backup</strong><small>Solo lugares con coordenadas</small></span>
+        </button>
+        <button id="exportGuideButton" class="export-card" type="button">
+          <span class="export-icon" aria-hidden="true">?</span>
+          <span><strong>Instrucciones</strong><small>Guia final para My Maps</small></span>
+        </button>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

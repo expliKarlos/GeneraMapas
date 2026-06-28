@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>[NOMBRE_PROYECTO] - backup KML</name>
+    <description><![CDATA[
+      <p>[OBJETIVO_MAPA]</p>
+      <p><b>Zona base:</b> [ZONA_BASE]</p>
+      <p><b>Fechas o duracion:</b> [FECHAS_O_DURACION]</p>
+      <p><b>Uso recomendado:</b> backup, Google Earth o visor externo. Para My Maps, usar CSV/Sheets como fuente principal.</p>
+    ]]></description>
+
+    <Style id="style-gastronomia">
+      <IconStyle>
+        <color>ff4370ff</color>
+        <scale>1.1</scale>
+        <Icon>
+          <href>https://maps.google.com/mapfiles/kml/paddle/orange-circle.png</href>
+        </Icon>
+      </IconStyle>
+    </Style>
+
+    <Style id="style-cultura">
+      <IconStyle>
+        <color>ffe1d04d</color>
+        <scale>1.1</scale>
+        <Icon>
+          <href>https://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png</href>
+        </Icon>
+      </IconStyle>
+    </Style>
+
+    <Style id="style-naturaleza">
+      <IconStyle>
+        <color>ff50af4c</color>
+        <scale>1.1</scale>
+        <Icon>
+          <href>https://maps.google.com/mapfiles/kml/paddle/grn-circle.png</href>
+        </Icon>
+      </IconStyle>
+    </Style>
+
+    <Style id="style-transporte">
+      <IconStyle>
+        <color>ff8b7d60</color>
+        <scale>1.1</scale>
+        <Icon>
+          <href>https://maps.google.com/mapfiles/kml/paddle/wht-circle.png</href>
+        </Icon>
+      </IconStyle>
+    </Style>
+
+    <Folder>
+      <name>[CAPA]</name>
+
+      <Placemark id="[id_lugar]">
+        <name>[NOMBRE_VISIBLE]</name>
+        <styleUrl>#[STYLE_ID]</styleUrl>
+        <description><![CDATA[
+          <p><b>Nombre original:</b> [NOMBRE_ORIGINAL]</p>
+          <p><b>Categoria:</b> [CATEGORIA] / [SUBCATEGORIA]</p>
+          <p><b>Direccion:</b> [DIRECCION]</p>
+          <p>[DESCRIPCION_BREVE]</p>
+          <p><b>Datos de interes:</b> [DATOS_INTERES]</p>
+          <p><b>Confianza:</b> [NIVEL_CONFIANZA]</p>
+          <p><b>Desambiguacion:</b> [NOTA_DESAMBIGUACION]</p>
+          <p><a href="[ENLACE_UTIL]">Mas informacion</a></p>
+          <p><a href="[IMAGE_URL]">Ver foto</a></p>
+          <p><a href="[VIDEO_URL]">Ver video</a></p>
+        ]]></description>
+        <ExtendedData>
+          <Data name="id_lugar"><value>[id_lugar]</value></Data>
+          <Data name="categoria"><value>[CATEGORIA]</value></Data>
+          <Data name="capa"><value>[CAPA]</value></Data>
+          <Data name="google_place_id"><value>[GOOGLE_PLACE_ID]</value></Data>
+        </ExtendedData>
+        <Point>
+          <coordinates>[LONGITUDE],[LATITUDE],0</coordinates>
+        </Point>
+      </Placemark>
+    </Folder>
+  </Document>
+</kml>

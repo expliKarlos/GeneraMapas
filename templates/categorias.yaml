@@ -1,0 +1,62 @@
+categorias:
+  - categoria: "Gastronomia"
+    color_google_maps: "Naranja / Coral"
+    color_hex: "#FF7043"
+    subcategorias:
+      - nombre: "Restaurantes"
+        icono: "Utensils"
+      - nombre: "Cafeterias y Desayunos"
+        icono: "Local cafe"
+      - nombre: "Bares y Noche"
+        icono: "Bar"
+
+  - categoria: "Visitar y Cultura"
+    color_google_maps: "Turquesa / Azul Claro"
+    color_hex: "#4DD0E1"
+    subcategorias:
+      - nombre: "Monumentos y Puntos Historicos"
+        icono: "Museum"
+      - nombre: "Museos"
+        icono: "Museum"
+      - nombre: "Puntos Fotograficos"
+        icono: "Camera"
+
+  - categoria: "Compras y Servicios"
+    color_google_maps: "Azul Real"
+    color_hex: "#1A73E8"
+    subcategorias:
+      - nombre: "Zonas Comerciales y Tiendas"
+        icono: "Shopping bag"
+      - nombre: "Mercados"
+        icono: "Store"
+
+  - categoria: "Naturaleza"
+    color_google_maps: "Verde"
+    color_hex: "#4CAF50"
+    subcategorias:
+      - nombre: "Parques y Jardines Urbanos"
+        icono: "Park"
+      - nombre: "Playas Rios y Costas"
+        icono: "Beach"
+      - nombre: "Senderismo y Miradores Naturales"
+        icono: "Mountain"
+
+  - categoria: "Alojamiento"
+    color_google_maps: "Morado / Violeta"
+    color_hex: "#7E57C2"
+    subcategorias:
+      - nombre: "Hotel o Base Principal"
+        icono: "Hotel"
+      - nombre: "Alojamiento"
+        icono: "Lodging"
+
+  - categoria: "Logistica y Transporte"
+    color_google_maps: "Gris Azulado"
+    color_hex: "#607D8B"
+    subcategorias:
+      - nombre: "Estaciones"
+        icono: "Directions transit"
+      - nombre: "Aeropuertos"
+        icono: "Flight"
+      - nombre: "Parkings"
+        icono: "Parking"

@@ -1,0 +1,39 @@
+nombre_proyecto: "[NOMBRE_PROYECTO]"
+slug_proyecto: "[SLUG_PROYECTO]"
+zona_base: "[ZONA_BASE]"
+objetivo_mapa: "[OBJETIVO_MAPA]"
+fechas_o_duracion: "[FECHAS_O_DURACION]"
+idioma_salida: "es"
+preferencia_capas: "[por_categoria|por_dia|por_zona|por_prioridad|mixta]"
+tolerancia_incertidumbre: "baja"
+
+fuentes_prioritarias:
+  - "sitios oficiales"
+  - "oficinas de turismo"
+  - "webs propias de los lugares"
+  - "fuentes cartograficas reconocidas"
+
+salidas_requeridas:
+  - "tabla_resumen"
+  - "csv"
+  - "lugares_por_confirmar"
+  - "advertencias"
+
+salidas_opcionales:
+  - "kml_backup"
+  - "geojson"
+
+multimedia:
+  permitir_image_url: true
+  permitir_video_url: true
+  preferir_fuentes_propias: true
+  carpeta_drive: "[URL_CARPETA_DRIVE_OPCIONAL]"
+
+mantenimiento:
+  fuente_de_verdad: "csv_o_google_sheets"
+  columna_matching: "id_lugar"
+  estrategia_reimportacion: "update_matching_items"
+  version_mapa: "v[VERSION] [FECHA]"
+
+notas_contexto: |
+  [NOTAS_CONTEXTO]
