@@ -46,11 +46,13 @@ En el panel `Proyecto`, revisa:
 
 - Nombre del proyecto.
 - Zona base.
+- Codigo pais OSM.
 - Estrategia de capas.
 - Version del mapa.
 
 Recomendacion:
 
+- Usa el codigo pais de dos letras para mejorar las busquedas, por ejemplo `at` para Austria o `es` para Espana.
 - Para viajes: usa capas por dia o por categoria.
 - Para guias generales: usa capas por categoria.
 
@@ -115,28 +117,65 @@ Tamanos de icono:
 
 La app tambien conserva campos avanzados como horario, precio, Wikipedia, Wikidata, OSM, Street View, Plus Code, elevacion y dificultad. En esta version se pueden cargar/exportar mediante CSV; la tabla principal muestra solo los campos mas frecuentes para no complicar el uso.
 
-## Paso 5: geocodificar con OpenStreetMap
+## Paso 5: resolver nombres ambiguos con IA
 
-Pulsa `Geocodificar pendientes con OSM` solo cuando quieras buscar coordenadas.
+Este paso es opcional, pero recomendable cuando la lista contiene nombres poco concretos.
+
+Ejemplos de nombres ambiguos:
+
+```text
+Museo
+Mercado central
+Mirador
+Restaurante italiano
+```
+
+La IA no decide coordenadas. Su funcion es:
+
+- normalizar el nombre visible,
+- proponer categoria y subcategoria,
+- proponer capa,
+- preparar una consulta OSM mas precisa,
+- dejar una nota de desambiguacion.
+
+Para usarlo:
+
+1. Introduce tu API key de OpenAI en el panel `Resolucion con IA`.
+2. Pulsa `Resolver con IA`.
+3. Revisa los cambios en la tabla.
+
+La clave se guarda solo durante la sesion del navegador. Si la app se usa de forma publica por muchas personas, lo correcto es mover este paso a un backend propio.
+
+## Paso 6: buscar candidatos con OpenStreetMap
+
+Pulsa `Buscar candidatos OSM` cuando quieras localizar los lugares.
 
 La app:
 
 - consulta Nominatim/OpenStreetMap,
+- pide hasta 5 candidatos por lugar,
 - hace una pausa aproximada de 1 segundo entre consultas,
 - guarda resultados en cache local del navegador,
 - no geocodifica mientras escribes.
 
 Importante:
 
-- Revisa los resultados, especialmente si hay nombres ambiguos.
+- Elige el candidato correcto en la columna `Candidatos`.
+- Pulsa `Usar` para copiar sus coordenadas a la fila.
 - Si una ubicacion no es clara, dejala como `revisar` o `por_confirmar`.
 - No uses esta funcion como buscador continuo.
+
+El boton `Geocodificar pendientes con OSM` acepta automaticamente el primer candidato disponible. Es mas rapido, pero menos seguro que revisar la columna `Candidatos`.
+
+Ejemplo de candidato aceptado:
+
+![Candidato OSM aceptado](screenshots/04_candidatos_osm.png)
 
 Estado listo para exportar:
 
 ![Listo para exportar](screenshots/03_listo_para_exportar.png)
 
-## Paso 6: exportar archivos
+## Paso 7: exportar archivos
 
 Usa los botones inferiores:
 
@@ -146,7 +185,7 @@ Usa los botones inferiores:
 - `KML para My Maps`: KML con estilos definidos en `Document`, sin carpetas, iconos remotos, colores por categoria y metadatos en `ExtendedData`.
 - `Instrucciones`: genera una guia de importacion para tu mapa.
 
-## Paso 7: importar en Google My Maps
+## Paso 8: importar en Google My Maps
 
 En Google My Maps:
 
@@ -179,7 +218,11 @@ Para actualizar un mapa existente:
 
 ### La app no encuentra un lugar
 
-Prueba a escribir el lugar con mas contexto:
+Prueba estas opciones:
+
+- Usa `Resolver con IA`.
+- Escribe el lugar con mas contexto.
+- Revisa que el codigo pais OSM sea correcto.
 
 ```text
 Goldenes Dachl, Innsbruck, Austria

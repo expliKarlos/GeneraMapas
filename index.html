@@ -36,6 +36,10 @@
           <input id="baseZone" type="text" value="Innsbruck, Austria" />
         </label>
         <label>
+          Codigo pais OSM
+          <input id="countryCode" type="text" maxlength="2" value="at" />
+        </label>
+        <label>
           Estrategia de capas
           <select id="layerStrategy">
             <option value="categoria">Por categoria</option>
@@ -65,6 +69,8 @@
         <textarea id="placesInput" spellcheck="false" placeholder="Un lugar por linea. Puedes incluir nombre, ciudad o direccion."></textarea>
         <div class="action-row">
           <button id="parseButton" class="primary-button" type="button">Preparar tabla</button>
+          <button id="resolveAiButton" class="secondary-button" type="button">Resolver con IA</button>
+          <button id="searchCandidatesButton" class="secondary-button" type="button">Buscar candidatos OSM</button>
           <button id="geocodeButton" class="secondary-button" type="button">Geocodificar pendientes con OSM</button>
           <button id="stopButton" class="ghost-button" type="button" disabled>Detener</button>
         </div>
@@ -88,6 +94,20 @@
         <p class="small">
           OSM/Nominatim se consulta solo al pulsar el boton. Se aplica pausa de 1 segundo y cache local.
         </p>
+        <div class="ai-box">
+          <h3>Resolucion con IA</h3>
+          <label>
+            API key OpenAI
+            <input id="aiApiKey" type="password" autocomplete="off" placeholder="sk-..." />
+          </label>
+          <label>
+            Modelo
+            <input id="aiModel" type="text" value="gpt-5.5-mini" />
+          </label>
+          <p class="small">
+            La clave se guarda solo en esta sesion del navegador. Para uso publico conviene un backend propio.
+          </p>
+        </div>
       </aside>
 
       <section class="panel table-panel" aria-labelledby="previewTitle">
@@ -109,6 +129,7 @@
                 <th>Latitud</th>
                 <th>Longitud</th>
                 <th>Estado</th>
+                <th>Candidatos</th>
                 <th></th>
               </tr>
             </thead>

@@ -134,17 +134,24 @@ const state = {
   rows: [],
   stopRequested: false,
   osmRequests: 0,
+  baseBoundingBox: null,
+  baseBoundingBoxKey: "",
 };
 
 const els = {
   projectName: document.querySelector("#projectName"),
   baseZone: document.querySelector("#baseZone"),
+  countryCode: document.querySelector("#countryCode"),
   layerStrategy: document.querySelector("#layerStrategy"),
   mapVersion: document.querySelector("#mapVersion"),
   placesInput: document.querySelector("#placesInput"),
   parseButton: document.querySelector("#parseButton"),
+  resolveAiButton: document.querySelector("#resolveAiButton"),
+  searchCandidatesButton: document.querySelector("#searchCandidatesButton"),
   geocodeButton: document.querySelector("#geocodeButton"),
   stopButton: document.querySelector("#stopButton"),
+  aiApiKey: document.querySelector("#aiApiKey"),
+  aiModel: document.querySelector("#aiModel"),
   loadExampleButton: document.querySelector("#loadExampleButton"),
   importCsvButton: document.querySelector("#importCsvButton"),
   csvFileInput: document.querySelector("#csvFileInput"),
@@ -264,64 +271,144 @@ function setCache(cache) {
   localStorage.setItem("mapas_geocode_cache", JSON.stringify(cache));
 }
 
-function cacheKey(query) {
-  return slugify(query).slice(0, 120);
+function cacheKey(query, suffix = "") {
+  return `${slugify(query).slice(0, 120)}${suffix ? `_${slugify(suffix).slice(0, 40)}` : ""}`;
 }
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function geocodePending() {
+function countryCodeValue() {
+  return String(els.countryCode.value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z]/g, "")
+    .slice(0, 2);
+}
+
+function candidateLabel(candidate) {
+  if (!candidate) return "Sin candidato";
+  const type = [candidate.type, candidate.class].filter(Boolean).join(" / ");
+  const name = candidate.name || candidate.display_name || "Resultado OSM";
+  return `${name}${type ? ` (${type})` : ""}`;
+}
+
+function osmId(candidate) {
+  if (!candidate || !candidate.osm_type || !candidate.osm_id) return "";
+  return `${candidate.osm_type}/${candidate.osm_id}`;
+}
+
+function getCandidateQuery(row) {
+  const parts = [];
+  for (const value of [row._query_osm, row.nombre_visible, row.nombre_original, els.baseZone.value]) {
+    const text = String(value || "").trim();
+    if (!text) continue;
+    const normalized = slugify(text);
+    if (parts.some((part) => slugify(part) === normalized)) continue;
+    parts.push(text);
+  }
+  return parts.join(", ");
+}
+
+async function getBaseBoundingBox() {
+  const baseZone = String(els.baseZone.value || "").trim();
+  if (!baseZone) return null;
+  const country = countryCodeValue();
+  const baseKey = cacheKey(baseZone, country);
+  if (state.baseBoundingBox && state.baseBoundingBoxKey === baseKey) return state.baseBoundingBox;
+  const key = `bbox_${baseKey}`;
+  const cache = getCache();
+  if (cache[key]) {
+    state.baseBoundingBox = cache[key];
+    state.baseBoundingBoxKey = baseKey;
+    return cache[key];
+  }
+
+  const url = new URL("https://nominatim.openstreetmap.org/search");
+  url.searchParams.set("format", "jsonv2");
+  url.searchParams.set("q", baseZone);
+  url.searchParams.set("limit", "1");
+  url.searchParams.set("accept-language", "es");
+  if (country) url.searchParams.set("countrycodes", country);
+
+  await sleep(1050);
+  const response = await fetch(url.toString(), { headers: { "Accept": "application/json" } });
+  if (!response.ok) return null;
+  const data = await response.json();
+  state.osmRequests += 1;
+  const bbox = data[0]?.boundingbox || null;
+  if (bbox) {
+    cache[key] = bbox;
+    setCache(cache);
+    state.baseBoundingBox = bbox;
+    state.baseBoundingBoxKey = baseKey;
+  }
+  return bbox;
+}
+
+function addBoundingBox(url, bbox) {
+  if (!bbox || bbox.length !== 4) return;
+  const [south, north, west, east] = bbox;
+  url.searchParams.set("viewbox", `${west},${north},${east},${south}`);
+  url.searchParams.set("bounded", "0");
+}
+
+async function searchNominatimCandidates(row) {
+  const query = getCandidateQuery(row);
+  const country = countryCodeValue();
+  const cache = getCache();
+  const bbox = await getBaseBoundingBox();
+  const key = cacheKey(query, `${country}_${bbox ? bbox.join("_") : "sin_bbox"}_candidatos`);
+  if (cache[key]) return cache[key];
+
+  const url = new URL("https://nominatim.openstreetmap.org/search");
+  url.searchParams.set("format", "jsonv2");
+  url.searchParams.set("q", query);
+  url.searchParams.set("limit", "5");
+  url.searchParams.set("accept-language", "es");
+  url.searchParams.set("addressdetails", "1");
+  url.searchParams.set("extratags", "1");
+  url.searchParams.set("namedetails", "1");
+  if (country) url.searchParams.set("countrycodes", country);
+  addBoundingBox(url, bbox);
+
+  await sleep(1050);
+  const response = await fetch(url.toString(), { headers: { "Accept": "application/json" } });
+  if (!response.ok) throw new Error(`Nominatim devolvio HTTP ${response.status}`);
+  const data = await response.json();
+  state.osmRequests += 1;
+  cache[key] = data;
+  setCache(cache);
+  return data;
+}
+
+async function searchCandidatesForRows({ autoAcceptFirst = false } = {}) {
   state.stopRequested = false;
   els.stopButton.disabled = false;
-  setStatus("Geocodificando", "busy");
-  const cache = getCache();
+  setStatus(autoAcceptFirst ? "Geocodificando" : "Buscando candidatos", "busy");
 
-  for (const row of state.rows) {
+  for (let index = 0; index < state.rows.length; index += 1) {
+    const row = state.rows[index];
     if (state.stopRequested) break;
-    if (row.latitude && row.longitude) continue;
+    if (row.latitude && row.longitude && row.estado === "confirmado") continue;
 
-    const query = `${row.nombre_original}, ${els.baseZone.value}`.trim();
-    const key = cacheKey(query);
-    let result = cache[key];
-
-    if (!result) {
-      const url = new URL("https://nominatim.openstreetmap.org/search");
-      url.searchParams.set("format", "jsonv2");
-      url.searchParams.set("q", query);
-      url.searchParams.set("limit", "1");
-      url.searchParams.set("accept-language", "es");
-      await sleep(1050);
-      const response = await fetch(url.toString(), {
-        headers: { "Accept": "application/json" },
-      });
-      if (!response.ok) {
+    try {
+      row._candidates = await searchNominatimCandidates(row);
+      if (autoAcceptFirst && row._candidates[0]) {
+        acceptCandidate(index, 0, { renderAfter: false });
+      } else if (row._candidates.length) {
+        row.estado = "revisar";
+        row.nota_desambiguacion = "OSM encontro candidatos. Elige uno en la tabla antes de exportar.";
+      } else {
         row.estado = "por_confirmar";
-        row.nota_desambiguacion = `Nominatim devolvio HTTP ${response.status}.`;
-        render();
-        continue;
+        row.nivel_confianza = "bajo";
+        row.nota_desambiguacion = "Sin candidatos OSM. Prueba a concretar el nombre o usar IA.";
       }
-      const data = await response.json();
-      result = data[0] || null;
-      cache[key] = result;
-      setCache(cache);
-      state.osmRequests += 1;
-    }
-
-    if (result && result.lat && result.lon) {
-      row.nombre_visible = result.name || row.nombre_visible;
-      row.direccion = result.display_name || row.direccion;
-      row.latitude = Number(result.lat).toFixed(6);
-      row.longitude = Number(result.lon).toFixed(6);
-      row.estado = "confirmado";
-      row.nivel_confianza = "medio";
-      row.nota_desambiguacion = "Coordenadas obtenidas de Nominatim; revisar si hay homonimos.";
-      row.fuentes_consultadas = "Nominatim/OpenStreetMap";
-    } else {
+    } catch (error) {
       row.estado = "por_confirmar";
       row.nivel_confianza = "bajo";
-      row.nota_desambiguacion = "Sin resultado en Nominatim con la zona base indicada.";
+      row.nota_desambiguacion = error.message || "Error consultando OSM.";
     }
     persistDraft();
     render();
@@ -332,6 +419,181 @@ async function geocodePending() {
   state.stopRequested = false;
 }
 
+async function geocodePending() {
+  await searchCandidatesForRows({ autoAcceptFirst: true });
+}
+
+function acceptCandidate(rowIndex, candidateIndex, { renderAfter = true } = {}) {
+  const row = state.rows[rowIndex];
+  const candidate = row?._candidates?.[candidateIndex];
+  if (!row || !candidate || !candidate.lat || !candidate.lon) return;
+
+  row.nombre_visible = candidate.name || row.nombre_visible;
+  row.direccion = candidate.display_name || row.direccion;
+  row.latitude = Number(candidate.lat).toFixed(6);
+  row.longitude = Number(candidate.lon).toFixed(6);
+  row.estado = "confirmado";
+  row.osm_id = osmId(candidate) || row.osm_id;
+  row.nivel_confianza = "medio";
+  row.nota_desambiguacion = "Candidato OSM aceptado por el usuario.";
+  row.fuentes_consultadas = "Nominatim/OpenStreetMap";
+  if (candidate.extratags?.wikidata && !row.wikidata_id) row.wikidata_id = candidate.extratags.wikidata;
+  if (candidate.extratags?.wikipedia?.startsWith("http") && !row.wikipedia_url) row.wikipedia_url = candidate.extratags.wikipedia;
+  persistDraft();
+  if (renderAfter) render();
+}
+
+function openAiApiKey() {
+  const key = String(els.aiApiKey.value || "").trim();
+  if (key) sessionStorage.setItem("generamapas_openai_key", key);
+  return key || sessionStorage.getItem("generamapas_openai_key") || "";
+}
+
+function aiSchema() {
+  return {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      lugares: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            indice: { type: "integer" },
+            nombre_visible: { type: "string" },
+            categoria: { type: "string", enum: Object.keys(KML_CATEGORY_STYLES) },
+            subcategoria: { type: "string" },
+            capa: { type: "string" },
+            prioridad: { type: "string", enum: ["imprescindible", "recomendable", "opcional"] },
+            tamano_icono: { type: "string", enum: ["grande", "normal", "pequeno"] },
+            consulta_osm: { type: "string" },
+            descripcion_breve: { type: "string" },
+            nota_desambiguacion: { type: "string" },
+            nivel_confianza: { type: "string", enum: ["alto", "medio", "bajo"] },
+          },
+          required: [
+            "indice",
+            "nombre_visible",
+            "categoria",
+            "subcategoria",
+            "capa",
+            "prioridad",
+            "tamano_icono",
+            "consulta_osm",
+            "descripcion_breve",
+            "nota_desambiguacion",
+            "nivel_confianza",
+          ],
+        },
+      },
+    },
+    required: ["lugares"],
+  };
+}
+
+function responseText(data) {
+  if (data.output_text) return data.output_text;
+  return (data.output || [])
+    .flatMap((item) => item.content || [])
+    .map((content) => content.text || "")
+    .join("");
+}
+
+function applyAiResult(result) {
+  for (const item of result.lugares || []) {
+    const row = state.rows[item.indice];
+    if (!row) continue;
+    row.nombre_visible = item.nombre_visible || row.nombre_visible;
+    row.categoria = item.categoria || row.categoria;
+    row.subcategoria = item.subcategoria || row.subcategoria;
+    row.capa = item.capa || row.capa;
+    row.prioridad = item.prioridad || row.prioridad;
+    row.tamano_icono = item.tamano_icono || ICON_SIZE_BY_PRIORITY[row.prioridad] || row.tamano_icono || "normal";
+    row.descripcion_breve = item.descripcion_breve || row.descripcion_breve;
+    row.nota_desambiguacion = item.nota_desambiguacion || "Revisado por IA; pendiente de confirmar coordenadas.";
+    row.nivel_confianza = item.nivel_confianza || "medio";
+    row._query_osm = item.consulta_osm || "";
+    const icon = iconForSubcategory(row.categoria, row.subcategoria);
+    if (icon) {
+      row.icono_recomendado = icon.iconName;
+      row.color_hex = styleForCategory(row.categoria).colorHex;
+    }
+    row.estado = row.latitude && row.longitude ? row.estado : "revisar";
+  }
+}
+
+async function resolveWithAi() {
+  if (!state.rows.length) parsePlaces();
+  if (!state.rows.length) return;
+
+  const key = openAiApiKey();
+  if (!key) {
+    setStatus("Falta API key", "error");
+    alert("Introduce una API key de OpenAI para usar la resolucion con IA.");
+    return;
+  }
+
+  setStatus("Resolviendo con IA", "busy");
+  els.resolveAiButton.disabled = true;
+  try {
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: els.aiModel.value.trim() || "gpt-5.5-mini",
+        input: [
+          {
+            role: "system",
+            content: "Eres un asistente de normalizacion de lugares para mapas de viaje. Devuelve solo JSON valido segun el esquema. No inventes coordenadas. Propon una consulta OSM precisa y una categoria/capa probable.",
+          },
+          {
+            role: "user",
+            content: JSON.stringify({
+              zona_base: els.baseZone.value,
+              codigo_pais: countryCodeValue(),
+              categorias_validas: Object.keys(KML_CATEGORY_STYLES),
+              subcategorias_disponibles: SUBCATEGORY_ICONS.map((item) => ({
+                categoria: item.categoria,
+                subcategoria: item.subcategoria,
+              })),
+              lugares: state.rows.map((row, index) => ({
+                indice: index,
+                nombre_original: row.nombre_original,
+                nombre_visible: row.nombre_visible,
+                capa: row.capa,
+                categoria: row.categoria,
+                subcategoria: row.subcategoria,
+              })),
+            }),
+          },
+        ],
+        text: {
+          format: {
+            type: "json_schema",
+            name: "generamapas_lugares",
+            schema: aiSchema(),
+            strict: true,
+          },
+        },
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error?.message || `OpenAI devolvio HTTP ${response.status}`);
+    applyAiResult(JSON.parse(responseText(data)));
+    persistDraft();
+    render();
+    setStatus("Listo", "ready");
+  } catch (error) {
+    setStatus("Error IA", "error");
+    alert(error.message || "No se pudo resolver con IA.");
+  } finally {
+    els.resolveAiButton.disabled = false;
+  }
+}
 function csvEscape(value) {
   const text = value == null ? "" : String(value);
   if (/[",\n\r]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
@@ -657,6 +919,20 @@ Zona base: ${els.baseZone.value}
   downloadFile(`instrucciones_${projectSlug()}.md`, guide, "text/markdown;charset=utf-8");
 }
 
+function candidateOptions(row, rowIndex) {
+  const candidates = row._candidates || [];
+  if (!candidates.length) return `<span class="small">Sin candidatos</span>`;
+  const options = candidates.map((candidate, index) => (
+    `<option value="${index}">${escapeHtml(candidateLabel(candidate))}</option>`
+  )).join("");
+  return `
+    <select class="candidate-select" name="candidate_${rowIndex}" aria-label="Candidato OSM ${rowIndex + 1}" data-candidate-select="${rowIndex}">
+      ${options}
+    </select>
+    <button class="candidate-action" type="button" data-accept-candidate="${rowIndex}">Usar</button>
+  `;
+}
+
 function render() {
   els.table.innerHTML = "";
   const fragment = document.createDocumentFragment();
@@ -689,6 +965,7 @@ function render() {
           ${stateOptions(row.estado)}
         </select>
       </td>
+      <td>${candidateOptions(row, index)}</td>
       <td><button class="delete-button" type="button" data-delete="${index}" aria-label="Eliminar fila ${index + 1}">x</button></td>
     `;
     fragment.appendChild(tr);
@@ -797,8 +1074,10 @@ function persistDraft() {
   const data = {
     projectName: els.projectName.value,
     baseZone: els.baseZone.value,
+    countryCode: els.countryCode.value,
     layerStrategy: els.layerStrategy.value,
     mapVersion: els.mapVersion.value,
+    aiModel: els.aiModel.value,
     placesInput: els.placesInput.value,
     rows: state.rows,
   };
@@ -812,8 +1091,10 @@ function restoreDraft() {
     const data = JSON.parse(raw);
     els.projectName.value = data.projectName || els.projectName.value;
     els.baseZone.value = data.baseZone || els.baseZone.value;
+    els.countryCode.value = data.countryCode || els.countryCode.value;
     els.layerStrategy.value = data.layerStrategy || els.layerStrategy.value;
     els.mapVersion.value = data.mapVersion || els.mapVersion.value;
+    els.aiModel.value = data.aiModel || els.aiModel.value;
     els.placesInput.value = data.placesInput || "";
     state.rows = data.rows || [];
   } catch {
@@ -824,6 +1105,7 @@ function restoreDraft() {
 function loadExample() {
   els.projectName.value = "Viaje Innsbruck";
   els.baseZone.value = "Innsbruck, Austria";
+  els.countryCode.value = "at";
   els.placesInput.value = [
     "Goldenes Dachl",
     "Hofburg Innsbruck",
@@ -836,6 +1118,8 @@ function loadExample() {
 }
 
 els.parseButton.addEventListener("click", parsePlaces);
+els.resolveAiButton.addEventListener("click", resolveWithAi);
+els.searchCandidatesButton.addEventListener("click", () => searchCandidatesForRows());
 els.geocodeButton.addEventListener("click", geocodePending);
 els.stopButton.addEventListener("click", () => { state.stopRequested = true; });
 els.loadExampleButton.addEventListener("click", loadExample);
@@ -872,13 +1156,28 @@ els.table.addEventListener("input", (event) => {
 });
 els.table.addEventListener("click", (event) => {
   const target = event.target;
-  if (!target.dataset || target.dataset.delete == null) return;
-  state.rows.splice(Number(target.dataset.delete), 1);
-  persistDraft();
-  render();
+  if (!target.dataset) return;
+  if (target.dataset.acceptCandidate != null) {
+    const rowIndex = Number(target.dataset.acceptCandidate);
+    const select = els.table.querySelector(`[data-candidate-select="${rowIndex}"]`);
+    acceptCandidate(rowIndex, Number(select?.value || 0));
+    return;
+  }
+  if (target.dataset.delete != null) {
+    state.rows.splice(Number(target.dataset.delete), 1);
+    persistDraft();
+    render();
+  }
 });
 
-for (const input of [els.projectName, els.baseZone, els.layerStrategy, els.mapVersion, els.placesInput]) {
+els.aiApiKey.value = sessionStorage.getItem("generamapas_openai_key") || "";
+els.aiApiKey.addEventListener("input", () => {
+  const key = String(els.aiApiKey.value || "").trim();
+  if (key) sessionStorage.setItem("generamapas_openai_key", key);
+  else sessionStorage.removeItem("generamapas_openai_key");
+});
+
+for (const input of [els.projectName, els.baseZone, els.countryCode, els.layerStrategy, els.mapVersion, els.aiModel, els.placesInput]) {
   input.addEventListener("input", persistDraft);
 }
 

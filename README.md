@@ -9,6 +9,8 @@ La app funciona en el navegador, sin backend y sin instalacion. Esta pensada par
 - Pegar una lista de lugares.
 - Importar un CSV existente.
 - Preparar una tabla editable.
+- Resolver nombres ambiguos con IA opcional.
+- Buscar varios candidatos OSM antes de confirmar coordenadas.
 - Geocodificar opcionalmente con OpenStreetMap/Nominatim.
 - Cachear resultados en el navegador.
 - Exportar CSV maestro.
@@ -58,10 +60,12 @@ https://TU_USUARIO.github.io/GeneraMapas/
 2. Completa nombre del proyecto y zona base.
 3. Pega lugares o importa CSV.
 4. Pulsa `Preparar tabla`.
-5. Revisa y edita la tabla.
-6. Geocodifica con OSM solo si necesitas coordenadas.
-7. Exporta CSV maestro, CSV por capas o KML para My Maps.
-8. Importa manualmente en Google My Maps.
+5. Si los nombres son ambiguos, pulsa `Resolver con IA`.
+6. Pulsa `Buscar candidatos OSM` y elige el candidato correcto en la tabla.
+7. Usa `Geocodificar pendientes con OSM` solo si aceptas la primera coincidencia automaticamente.
+8. Revisa y edita la tabla.
+9. Exporta CSV maestro, CSV por capas o KML para My Maps.
+10. Importa manualmente en Google My Maps.
 
 ## Documentacion
 
@@ -78,8 +82,11 @@ https://TU_USUARIO.github.io/GeneraMapas/
 
 - La app procesa los datos en el navegador.
 - El borrador se guarda en `localStorage`.
+- La API key de OpenAI, si se usa, se guarda solo en `sessionStorage`.
 - La geocodificacion OSM solo se ejecuta cuando el usuario pulsa el boton correspondiente.
 - No hay servidor propio recibiendo tus datos.
+
+La resolucion con IA desde GitHub Pages es util para uso personal, pero no es el modelo ideal para una app publica con muchas personas porque la clave se usa desde el navegador. Para uso compartido serio conviene anadir un backend ligero que proteja la clave y aplique limites.
 
 ## OpenStreetMap / Nominatim
 

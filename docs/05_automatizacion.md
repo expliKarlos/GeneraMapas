@@ -32,10 +32,12 @@ python .\Mapas\scripts\validate_lugares.py .\Mapas\templates\lugares.csv
 
 ```text
 Lista original
-  -> Prompt fase 1
+  -> Preparar tabla
+  -> Resolver nombres con IA opcional
+  -> Buscar candidatos OSM
+  -> Confirmacion humana del candidato correcto
   -> CSV maestro
   -> Validacion automatica
-  -> Correccion manual o prompt fase 2
   -> CSV por capas
   -> Google My Maps
 ```
@@ -44,12 +46,14 @@ Lista original
 
 Para maxima fiabilidad:
 
-1. Usar el LLM para limpiar nombres, categorias y contexto.
-2. Usar un geocoder real para coordenadas:
+1. Usar el LLM para limpiar nombres, categorias, subcategorias, capas y consulta OSM.
+2. Usar un geocoder real para candidatos de coordenadas:
    - Google Places API / Geocoding API si hay presupuesto y proyecto GCP.
    - Nominatim/OpenStreetMap si el volumen es bajo y se respetan sus politicas.
-3. Guardar `google_place_id` cuando exista.
-4. Mantener `direccion` aunque haya coordenadas, porque ayuda a auditorias humanas.
+3. Mostrar varios candidatos cuando sea posible.
+4. Confirmar manualmente el candidato correcto.
+5. Guardar `google_place_id` cuando exista.
+6. Mantener `direccion` aunque haya coordenadas, porque ayuda a auditorias humanas.
 
 ## Geocodificacion OSM para viajes
 
@@ -69,7 +73,28 @@ Este caso encaja con Nominatim/OpenStreetMap si se cumplen estas reglas:
 - revision humana de resultados ambiguos,
 - no usar como busqueda continua ni autocompletado en tiempo real.
 
-La app estatica de `github-pages/` sigue este enfoque: no geocodifica mientras el usuario escribe y guarda resultados en `localStorage`.
+La app estatica de GitHub Pages sigue este enfoque: no geocodifica mientras el usuario escribe, guarda resultados en `localStorage` y separa la busqueda de candidatos de la confirmacion final.
+
+## Resolucion con IA
+
+La IA se usa solo para mejorar la identificacion previa del lugar:
+
+- nombre visible,
+- categoria,
+- subcategoria,
+- capa,
+- prioridad,
+- consulta OSM sugerida,
+- nota de desambiguacion.
+
+No debe generar coordenadas ni sustituir a un geocoder real.
+
+En GitHub Pages la integracion es client-side: la API key se introduce en el navegador y se guarda solo en `sessionStorage`. Esto es aceptable para pruebas o uso personal controlado, pero no para una app publica con usuarios externos. Para ese caso, el siguiente paso tecnico recomendable es un backend ligero que:
+
+- proteja la API key,
+- limite cuotas,
+- registre errores,
+- aplique validaciones antes de llamar al modelo.
 
 ## Particion por capas
 
