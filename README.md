@@ -16,6 +16,7 @@ La app funciona en el navegador, sin backend y sin instalacion. Esta pensada par
 - Exportar KML de backup.
 - Exportar KML adaptado para My Maps con estilos en `Document`.
 - Personalizar prioridad y tamano de icono por lugar.
+- Conservar campos avanzados como horario, precio, Wikipedia, Wikidata, OSM, Street View, Plus Code, elevacion y dificultad.
 - Generar instrucciones de importacion para Google My Maps.
 
 ## Demo local
@@ -71,6 +72,7 @@ https://TU_USUARIO.github.io/GeneraMapas/
 - [Importacion en My Maps](docs/04_importacion_my_maps.md)
 - [Automatizacion](docs/05_automatizacion.md)
 - [Checklist de validacion](checklists/validacion.md)
+- [Iconos por subcategoria](data/google-icons.json)
 
 ## Privacidad
 
@@ -114,6 +116,23 @@ En el KML para My Maps, el tamano se traduce a `<scale>`:
 - `grande`: `1.3`
 - `normal`: `1.1`
 - `pequeno`: `0.9`
+
+## Campos avanzados
+
+El CSV canonico incluye campos avanzados desde el inicio, aunque la interfaz principal solo edite los mas frecuentes:
+
+- `horario`
+- `precio_rango`
+- `interior_exterior`
+- `wikipedia_url`
+- `wikidata_id`
+- `osm_id`
+- `street_view_url`
+- `plus_code`
+- `elevacion_m`
+- `dificultad`
+
+Estos campos se conservan al importar/exportar CSV y se incluyen en `ExtendedData` del KML para My Maps.
 
 ## Licencia
 

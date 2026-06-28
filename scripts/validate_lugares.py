@@ -25,6 +25,16 @@ REQUIRED_COLUMNS = [
     "tamano_icono",
     "icono_recomendado",
     "color_hex",
+    "horario",
+    "precio_rango",
+    "interior_exterior",
+    "wikipedia_url",
+    "wikidata_id",
+    "osm_id",
+    "street_view_url",
+    "plus_code",
+    "elevacion_m",
+    "dificultad",
     "latitude",
     "longitude",
     "descripcion_breve",
@@ -43,6 +53,8 @@ VALID_ESTADOS = {"confirmado", "revisar", "por_confirmar"}
 VALID_CONFIANZA = {"alto", "medio", "bajo"}
 VALID_PRIORIDAD = {"imprescindible", "recomendable", "opcional"}
 VALID_TAMANO_ICONO = {"grande", "normal", "pequeno"}
+VALID_INTERIOR_EXTERIOR = {"", "lluvia", "sol"}
+VALID_DIFICULTAD = {"", "facil", "media", "alta"}
 ID_RE = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*$")
 
 
@@ -110,6 +122,8 @@ def validate(path: Path) -> int:
         confianza = row.get("nivel_confianza", "").strip()
         prioridad = row.get("prioridad", "").strip()
         tamano_icono = row.get("tamano_icono", "").strip()
+        interior_exterior = row.get("interior_exterior", "").strip()
+        dificultad = row.get("dificultad", "").strip()
         lat = parse_decimal(row.get("latitude", ""))
         lon = parse_decimal(row.get("longitude", ""))
 
@@ -127,6 +141,10 @@ def validate(path: Path) -> int:
             errors.append(f"{prefix}: prioridad invalida: {prioridad!r}")
         if tamano_icono and tamano_icono not in VALID_TAMANO_ICONO:
             errors.append(f"{prefix}: tamano_icono invalido: {tamano_icono!r}")
+        if interior_exterior not in VALID_INTERIOR_EXTERIOR:
+            errors.append(f"{prefix}: interior_exterior invalido: {interior_exterior!r}")
+        if dificultad not in VALID_DIFICULTAD:
+            errors.append(f"{prefix}: dificultad invalida: {dificultad!r}")
 
         if estado == "por_confirmar" and (lat is not None or lon is not None):
             warnings.append(f"{prefix}: por_confirmar contiene coordenadas; revisa que no sean inventadas.")
@@ -145,7 +163,11 @@ def validate(path: Path) -> int:
             if not row.get("nota_desambiguacion", "").strip():
                 warnings.append(f"{prefix}: falta nota_desambiguacion para estado/confianza no definitivos.")
 
-        for url_field in ("enlace_util", "image_url", "video_url"):
+        elevacion = row.get("elevacion_m", "").strip()
+        if elevacion and parse_decimal(elevacion) is None:
+            errors.append(f"{prefix}: elevacion_m no numerica: {elevacion!r}")
+
+        for url_field in ("enlace_util", "image_url", "video_url", "wikipedia_url", "street_view_url"):
             value = row.get(url_field, "").strip()
             if looks_private_url(value):
                 warnings.append(f"{prefix}: {url_field} parece privado o fragil: {value}")

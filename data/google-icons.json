@@ -1,0 +1,18 @@
+[
+  { "categoria": "Gastronomia", "subcategoria": "Restaurantes", "icon_name": "restaurant", "code_point": "e56c" },
+  { "categoria": "Gastronomia", "subcategoria": "Cafeterias y Desayunos", "icon_name": "coffee_maker", "code_point": "eff0" },
+  { "categoria": "Gastronomia", "subcategoria": "Bares y Noche", "icon_name": "local_bar", "code_point": "e540" },
+  { "categoria": "Visitar y Cultura", "subcategoria": "Monumentos y Puntos Historicos", "icon_name": "castle", "code_point": "eab1" },
+  { "categoria": "Visitar y Cultura", "subcategoria": "Museos", "icon_name": "museum", "code_point": "ea36" },
+  { "categoria": "Visitar y Cultura", "subcategoria": "Puntos Fotograficos", "icon_name": "photo_camera_back", "code_point": "ef68" },
+  { "categoria": "Compras y Servicios", "subcategoria": "Zonas Comerciales y Tiendas", "icon_name": "local_mall", "code_point": "e54c" },
+  { "categoria": "Compras y Servicios", "subcategoria": "Mercados", "icon_name": "storefront", "code_point": "ea12" },
+  { "categoria": "Naturaleza", "subcategoria": "Parques y Jardines Urbanos", "icon_name": "forest", "code_point": "ea99" },
+  { "categoria": "Naturaleza", "subcategoria": "Playas Rios y Costas", "icon_name": "water", "code_point": "f084" },
+  { "categoria": "Naturaleza", "subcategoria": "Senderismo y Miradores Naturales", "icon_name": "landscape_2", "code_point": "f4c4" },
+  { "categoria": "Alojamiento", "subcategoria": "Hotel", "icon_name": "hotel", "code_point": "e53a" },
+  { "categoria": "Alojamiento", "subcategoria": "Alojamiento", "icon_name": "night_shelter", "code_point": "f1f1" },
+  { "categoria": "Logistica y Transporte", "subcategoria": "Estaciones", "icon_name": "train", "code_point": "e570" },
+  { "categoria": "Logistica y Transporte", "subcategoria": "Aeropuertos", "icon_name": "travel", "code_point": "e6ca" },
+  { "categoria": "Logistica y Transporte", "subcategoria": "Parkings", "icon_name": "local_parking", "code_point": "e54f" }
+]

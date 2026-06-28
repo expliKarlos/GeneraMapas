@@ -12,6 +12,16 @@ const CANONICAL_COLUMNS = [
   "tamano_icono",
   "icono_recomendado",
   "color_hex",
+  "horario",
+  "precio_rango",
+  "interior_exterior",
+  "wikipedia_url",
+  "wikidata_id",
+  "osm_id",
+  "street_view_url",
+  "plus_code",
+  "elevacion_m",
+  "dificultad",
   "latitude",
   "longitude",
   "descripcion_breve",
@@ -100,6 +110,25 @@ const ICON_SIZE_BY_PRIORITY = {
   recomendable: "normal",
   opcional: "pequeno",
 };
+
+const SUBCATEGORY_ICONS = [
+  { categoria: "Gastronomia", subcategoria: "Restaurantes", iconName: "restaurant", codePoint: "e56c" },
+  { categoria: "Gastronomia", subcategoria: "Cafeterias y Desayunos", iconName: "coffee_maker", codePoint: "eff0" },
+  { categoria: "Gastronomia", subcategoria: "Bares y Noche", iconName: "local_bar", codePoint: "e540" },
+  { categoria: "Visitar y Cultura", subcategoria: "Monumentos y Puntos Historicos", iconName: "castle", codePoint: "eab1" },
+  { categoria: "Visitar y Cultura", subcategoria: "Museos", iconName: "museum", codePoint: "ea36" },
+  { categoria: "Visitar y Cultura", subcategoria: "Puntos Fotograficos", iconName: "photo_camera_back", codePoint: "ef68" },
+  { categoria: "Compras y Servicios", subcategoria: "Zonas Comerciales y Tiendas", iconName: "local_mall", codePoint: "e54c" },
+  { categoria: "Compras y Servicios", subcategoria: "Mercados", iconName: "storefront", codePoint: "ea12" },
+  { categoria: "Naturaleza", subcategoria: "Parques y Jardines Urbanos", iconName: "forest", codePoint: "ea99" },
+  { categoria: "Naturaleza", subcategoria: "Playas Rios y Costas", iconName: "water", codePoint: "f084" },
+  { categoria: "Naturaleza", subcategoria: "Senderismo y Miradores Naturales", iconName: "landscape_2", codePoint: "f4c4" },
+  { categoria: "Alojamiento", subcategoria: "Hotel", iconName: "hotel", codePoint: "e53a" },
+  { categoria: "Alojamiento", subcategoria: "Alojamiento", iconName: "night_shelter", codePoint: "f1f1" },
+  { categoria: "Logistica y Transporte", subcategoria: "Estaciones", iconName: "train", codePoint: "e570" },
+  { categoria: "Logistica y Transporte", subcategoria: "Aeropuertos", iconName: "travel", codePoint: "e6ca" },
+  { categoria: "Logistica y Transporte", subcategoria: "Parkings", iconName: "local_parking", codePoint: "e54f" },
+];
 
 const state = {
   rows: [],
@@ -194,6 +223,16 @@ function parsePlaces() {
       tamano_icono: "normal",
       icono_recomendado: category.icono,
       color_hex: category.color,
+      horario: "",
+      precio_rango: "",
+      interior_exterior: "",
+      wikipedia_url: "",
+      wikidata_id: "",
+      osm_id: "",
+      street_view_url: "",
+      plus_code: "",
+      elevacion_m: "",
+      dificultad: "",
       latitude: "",
       longitude: "",
       descripcion_breve: "",
@@ -452,6 +491,18 @@ function styleForCategory(category) {
   return KML_CATEGORY_STYLES[category] || DEFAULT_KML_STYLE;
 }
 
+function normalizeTextKey(value) {
+  return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function iconForSubcategory(row) {
+  const categoryKey = normalizeTextKey(row.categoria);
+  const subcategoryKey = normalizeTextKey(row.subcategoria);
+  return SUBCATEGORY_ICONS.find((item) =>
+    normalizeTextKey(item.categoria) === categoryKey && normalizeTextKey(item.subcategoria) === subcategoryKey
+  ) || null;
+}
+
 function normalizeHexColor(value, fallback = "#607D8B") {
   const color = String(value || "").trim();
   if (/^#[0-9a-fA-F]{6}$/.test(color)) return color.toUpperCase();
@@ -508,6 +559,7 @@ function kmlStylesForRows(rows) {
 
 function extendedDataForRow(row) {
   const baseStyle = styleForCategory(row.categoria);
+  const subcategoryIcon = iconForSubcategory(row);
   const colorHex = normalizeHexColor(row.color_hex, baseStyle.colorHex);
   const dataFields = {
     id_lugar: row.id_lugar,
@@ -515,8 +567,20 @@ function extendedDataForRow(row) {
     subcategoria: row.subcategoria,
     prioridad: row.prioridad,
     tamano_icono: normalizeIconSize(row.tamano_icono),
-    icono_fuente: baseStyle.iconSource,
+    icono_fuente: subcategoryIcon ? `Material Symbols - ${subcategoryIcon.iconName}` : baseStyle.iconSource,
+    icono_material: subcategoryIcon ? subcategoryIcon.iconName : "",
+    icono_code_point: subcategoryIcon ? subcategoryIcon.codePoint : "",
     color_hex: colorHex,
+    horario: row.horario,
+    precio_rango: row.precio_rango,
+    interior_exterior: row.interior_exterior,
+    wikipedia_url: row.wikipedia_url,
+    wikidata_id: row.wikidata_id,
+    osm_id: row.osm_id,
+    street_view_url: row.street_view_url,
+    plus_code: row.plus_code,
+    elevacion_m: row.elevacion_m,
+    dificultad: row.dificultad,
     capa: row.capa,
     estado: row.estado,
     direccion: row.direccion,

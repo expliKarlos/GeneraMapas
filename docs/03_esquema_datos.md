@@ -17,6 +17,16 @@
 | `tamano_icono` | no | enum | `grande`, `normal`, `pequeno`. |
 | `icono_recomendado` | no | texto | Nombre funcional del icono recomendado. |
 | `color_hex` | no | texto | Color asociado en formato `#RRGGBB`, por ejemplo `#4CAF50`. |
+| `horario` | no | texto | Horario resumido, por ejemplo `10:00-22:00`. |
+| `precio_rango` | no | texto | `EUR`, `EUR EUR`, `EUR EUR EUR` o importe. |
+| `interior_exterior` | no | enum | `lluvia` o `sol`. |
+| `wikipedia_url` | no | URL | Enlace Wikipedia. |
+| `wikidata_id` | no | texto | Identificador Wikidata, por ejemplo `Q695818`. |
+| `osm_id` | no | texto | Identificador OSM si se conoce. |
+| `street_view_url` | no | URL | Enlace a Street View. |
+| `plus_code` | no | texto | Plus Code. |
+| `elevacion_m` | no | decimal | Elevacion en metros, util en senderismo. |
+| `dificultad` | no | enum | `facil`, `media`, `alta`. |
 | `latitude` | si, si confirmado | decimal | Latitud decimal. |
 | `longitude` | si, si confirmado | decimal | Longitud decimal. |
 | `descripcion_breve` | no | texto | Resumen util y conciso. |
@@ -105,6 +115,41 @@ Ejemplo:
 
 En una fase posterior, el usuario podra cambiar los colores antes de descargar el KML para My Maps.
 
+## Campos basicos y avanzados
+
+Campos basicos recomendados para cualquier usuario:
+
+- `id_lugar`
+- `nombre_visible`
+- `estado`
+- `capa`
+- `categoria`
+- `subcategoria`
+- `prioridad`
+- `tamano_icono`
+- `color_hex`
+- `latitude`
+- `longitude`
+- `descripcion_breve`
+- `enlace_util`
+
+Campos avanzados opcionales:
+
+- `horario`
+- `precio_rango`
+- `interior_exterior`
+- `wikipedia_url`
+- `wikidata_id`
+- `osm_id`
+- `street_view_url`
+- `plus_code`
+- `elevacion_m`
+- `dificultad`
+- `wkt`
+- `fuentes_consultadas`
+
+Estos campos avanzados se exportan en CSV y en `ExtendedData` del KML para My Maps, aunque no todos se editen todavia desde la tabla principal.
+
 ## Reglas de coordenadas
 
 - No adivinar coordenadas.
@@ -119,5 +164,5 @@ En una fase posterior, el usuario podra cambiar los colores antes de descargar e
 El CSV debe usar estas columnas, en este orden:
 
 ```csv
-id_lugar,nombre_visible,nombre_original,estado,direccion,google_place_id,capa,categoria,subcategoria,prioridad,tamano_icono,icono_recomendado,color_hex,latitude,longitude,descripcion_breve,datos_interes,enlace_util,image_url,video_url,media_credit,nivel_confianza,nota_desambiguacion,wkt,fuentes_consultadas
+id_lugar,nombre_visible,nombre_original,estado,direccion,google_place_id,capa,categoria,subcategoria,prioridad,tamano_icono,icono_recomendado,color_hex,horario,precio_rango,interior_exterior,wikipedia_url,wikidata_id,osm_id,street_view_url,plus_code,elevacion_m,dificultad,latitude,longitude,descripcion_breve,datos_interes,enlace_util,image_url,video_url,media_credit,nivel_confianza,nota_desambiguacion,wkt,fuentes_consultadas
 ```

@@ -145,3 +145,18 @@ La opcion avanzada de pre-renderizar iconos Material Symbols queda reservada par
 - Script para generar KML desde CSV validado.
 - Script para generar GeoJSON para visor web.
 - Integracion opcional con Google Places API.
+- Editor de campos avanzados en la app.
+- Personalizacion visual de color por categoria antes de descargar KML.
+- Pre-renderizado de iconos Material Symbols como PNG alojados remotamente.
+
+## Iconos por subcategoria
+
+La app incluye una tabla interna de iconos Material Symbols generada a partir del archivo de referencia `GoogleIcons.csv` / `GoogleIcons.xlsx`.
+
+Uso actual:
+
+- La subcategoria determina `icono_material` y `icono_code_point`.
+- El KML para My Maps conserva esos datos en `ExtendedData`.
+- El icono visual KML sigue usando una URL remota compatible con My Maps.
+
+Este enfoque permite guardar la intencion semantica del icono aunque My Maps simplifique la representacion visual al importar.

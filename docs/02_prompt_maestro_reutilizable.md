@@ -76,6 +76,16 @@ Devuelve cada lugar con estos campos:
 - `tamano_icono`
 - `icono_recomendado`
 - `color_hex`
+- `horario`
+- `precio_rango`
+- `interior_exterior`
+- `wikipedia_url`
+- `wikidata_id`
+- `osm_id`
+- `street_view_url`
+- `plus_code`
+- `elevacion_m`
+- `dificultad`
 - `latitude`
 - `longitude`
 - `descripcion_breve`
@@ -115,7 +125,7 @@ No generes KML en esta fase.
 - No inventes fuentes, URLs, coordenadas ni datos historicos.
 - Si usas informacion externa, cita fuentes.
 - Si no puedes verificar un dato, indicalo.
-- Mantén descripciones breves y utiles para el viajero.
+- Manten descripciones breves y utiles para el viajero.
 - Evita texto promocional generico.
 - Prioriza fuentes oficiales y sitios de turismo local.
 

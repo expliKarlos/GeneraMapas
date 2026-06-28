@@ -113,6 +113,8 @@ Tamanos de icono:
 - `normal`: marcador por defecto.
 - `pequeno`: marcador menos destacado.
 
+La app tambien conserva campos avanzados como horario, precio, Wikipedia, Wikidata, OSM, Street View, Plus Code, elevacion y dificultad. En esta version se pueden cargar/exportar mediante CSV; la tabla principal muestra solo los campos mas frecuentes para no complicar el uso.
+
 ## Paso 5: geocodificar con OpenStreetMap
 
 Pulsa `Geocodificar pendientes con OSM` solo cuando quieras buscar coordenadas.
